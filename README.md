@@ -1,7 +1,6 @@
 ## 📫 웹캠과 node.JS로 인생네컷 만들기
 
 ### ✨ 사이트 주소
-https://phomerge.run.goorm.app/
 
 ### 📌 과정
 1. 컴퓨터의 웹캠에 접근하여 사진을 4장 찍어 서버로 전송하기
@@ -33,8 +32,8 @@ npm install path fs sharp nodemon moment dotenv ejs
 #### exe 실행파일 (electron)
 ```
 npm install --save-dev electron
-npx electron-packager . youtubeDL --platform=win32 --arch=x64
-/youtubeDL-win32-x64/youtubeDL.exe 파일 관리자 권한 실행 필요
+npx electron-packager . sehanFilm --platform=win32 --arch=x64
+/sehanFilm-win32-x64/sehanFilm.exe 파일 관리자 권한 실행 필요
 ```
 
 #### 💬 이후 작업

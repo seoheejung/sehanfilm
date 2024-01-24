@@ -1,5 +1,5 @@
 .main-text {
-    opacity: 0;
+    opacity: 0; /* 처음에는 텍스트를 보이지 않게 설정 */
     
     animation-name: fadeIn; 
     animation-duration: 2s; 
