@@ -1,0 +1,33 @@
+.image-container {
+    text-align: center;
+    margin: 20px;
+}
+.qr-code {
+    position: relative;
+    display: inline-block;
+    padding: 10px;
+    border: 5px solid pink; /* 분홍색 테두리 추가 */
+    border-radius: 10px;
+    width: 170px;
+    height: 170px;
+    margin: auto;
+}
+.qr-code::before,
+.qr-code::after {
+    content: '';
+    position: absolute;
+    width: 20px; height: 20px; /* 장식의 크기 */
+    background: pink; /* 분홍색 배경 */
+}
+.qr-code::before {
+    top: -10px; left: -10px; /* 왼쪽 위 모서리에 위치 */
+    border-radius: 50%; /* 원형 장식 */
+}
+.qr-code::after {
+    bottom: -10px; right: -10px; /* 오른쪽 아래 모서리에 위치 */
+    border-radius: 50%;
+}
+
+.photo {
+    max-width: 700px;
+}

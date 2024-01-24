@@ -1,0 +1,111 @@
+.main-text {
+    opacity: 0;
+    
+    animation-name: fadeIn; 
+    animation-duration: 2s; 
+    animation-fill-mode : forwards ;
+}
+@keyframes fadeIn {
+    to {
+        opacity :1 ;
+    }
+}
+
+.frame-choice {
+    display: flex; 
+    justify-content: space-evenly;
+    margin: 10px
+}
+
+.frame-choice .frame {
+    padding: 10px;
+}
+
+.frame-choice img{
+    width: 250px;
+}
+
+.frame-choice label{
+    font-family: 'seolleimcool-SemiBold';
+    color: white;
+    padding: 10px;
+}
+
+.camera-ui {
+    position: relative;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+#webcam {
+    display: block;
+    background: #eee;
+    filter: brightness(120%) contrast(80%) saturate(110%) sepia(10%);
+}
+#capture {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px;
+    border: none;
+    background: black;
+    color: white;
+    cursor: pointer;
+    width: 65px;
+    height: 65px;
+    border-radius: 50px;
+}
+
+#capture:hover {
+    background: #62f5da;
+    color: black;
+}
+
+#canvas {
+    display: none;
+}
+
+.controls {
+    position: absolute;
+    bottom: 10px;
+    width: 100%;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.controls button {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+.controls button:focus {
+    outline: none;
+}
+.controls .timer {
+    font-family: 'Courier New', Courier, monospace;
+    color: #333;
+}
+
+.reset-frame {
+    width: 100%;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.reset-frame button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 150px;
+    font-size: small;
+    padding: 10px 5px;
+}
+.reset-frame button:hover {
+    background: #62f5da;
+    color: black;
+}

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+    <!-- QR 코드 생성 라이브러리 -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/css/qrcode.css" />
+    <title>sehamFilm</title>
+    <style>
+        
+    </style>
+</head>
+<body>
+    <div class="parent-container">
+        <a href='/' class="logo-text">sehamFilm</a>
+        <div class="image-container">
+            <img src="<%= imageUrl %>" class="photo" alt="Merged Image">
+        </div>
+        <div style="margin: 20px;">
+            <span class="main-text">QR코드를 스캔하시면 모바일로 다운로드 하실 수 있습니다.</span>
+        </div>
+        <!-- QR 코드를 표시할 div -->
+        <div id="qr-code" class="qr-code"></div> 
+        <div style="margin: 20px;">
+            <a href='/' class="main-text">돌아가기</a>
+        </div>
+        <footer class=footer-class>
+            <div class=footer-container>
+                <div class="copy">
+                    사이트명 : sehanFilm
+                    © 2024 seo.hj All Rights Reserved.
+                </div>
+            </div>
+        </footer>
+    </div> 
+    
+    <script>
+        // 페이지 로드 시 QR 코드 생성
+        window.onload = function() {
+            const imageUrl = "<%= imageUrl %>";
+            const qrCodeDiv = document.getElementById('qr-code');
+            QRCode.toDataURL(imageUrl, function (err, url) {
+            if (err) {
+                console.error(err);
+                qrCodeDiv.textContent = 'QR 코드를 생성할 수 없습니다.';
+            } else {
+                console.log(url)
+                const img = document.createElement('img');
+                img.src = url;
+                qrCodeDiv.appendChild(img); // QR 코드 이미지를 div에 추가
+            }
+            
+        });
+    };
+    </script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>sehamFilm</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/css/webcam.css" />
+</head>
+<body>
+    <div class="parent-container">
+        <a href='/' class="logo-text">sehamFilm</a>
+        <span class="main-text" id="frame-text" >프레임을 선택해주세요.</span>
+        <div class="frame-choice">
+            <div class="frame">
+                <img src="/image/choose_frame_2.jpg" alt="Frame 2" width="100">
+                <label for="frame2">
+                    <input type="radio" id="frame2" name="frame" value="frame_2.jpg" checked>
+                    밤하늘
+                </label>
+            </div>
+            <div class="frame">
+                <img src="/image/choose_frame_3.jpg" alt="Frame 3" width="100">
+                <label for="frame3">
+                    <input type="radio" id="frame3" name="frame" value="frame_3.jpg">
+                    벚꽃
+                </label>
+            </div>
+            <div class="frame">
+                <img src="/image/choose_frame_4.jpg" alt="Frame 4" width="100">
+                <label for="frame4">
+                    <input type="radio" id="frame4" name="frame" value="frame_4.jpg">
+                    구름
+                </label>
+            </div>
+        </div>
+        <span class="main-text" id="camera-text" style="display: none;">촬영 버튼을 클릭해주세요</span>
+        <div class="camera-ui" style="display: none;">
+            <video id="webcam" autoplay playsinline width="780" height="585"></video>
+            <canvas id="canvas" width="780" height="585"></canvas>
+            <audio id="shutterSound" src="/lib/tfile.wav" preload="auto"></audio>
+        
+            <div class="controls" id="controls">
+                <button id="capture">촬영</button>
+            </div>
+        </div>
+        <div class="reset-frame" id="reset-frame" style="display: none;">
+            <button id="select-frame">프레임 다시 선택하기</button> 
+        </div>
+        <footer class=footer-class>
+            <div class=footer-container>
+                <div class="copy">
+                    사이트명 : sehanFilm
+                    © 2024 seo.hj All Rights Reserved.
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    
+    <script src="/js/webcam.js"></script>
+</body>
+</html>
