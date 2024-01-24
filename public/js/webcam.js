@@ -1,7 +1,7 @@
 let frame = 'frame_2.jpg';
 
 document.querySelectorAll('input[name="frame"]').forEach((elem) => {
-    elem.addEventListener("change", function(event) {
+    elem.addEventListener("click", function(event) {
         document.getElementById("frame-text").style.display = "none";
         document.querySelector(".frame-choice").style.display = "none";
         document.getElementById("camera-text").style.display = "block";
@@ -25,23 +25,22 @@ document.getElementById('capture').addEventListener('click', () => {
     let timerDiv = document.getElementById('timer') || document.createElement('div');
     let photoCount = 0; // 찍은 사진의 수를 추적
     let imagesToSend = []; // 서버로 보낼 이미지 데이터를 담을 배열
-    document.getElementById('timer')
     let captureButton = document.getElementById('controls'); 
     captureButton.style.display = 'none'; 
-
+    document.getElementById('select-frame').style.display = 'none'; 
+    document.getElementById('timer')
+    const resetFrame = document.getElementById('reset-frame');
     if (!document.getElementById('timer')) {
         // 타이머를 표시할 요소 설정
         timerDiv.setAttribute('id', 'timer');
         timerDiv.style.position = 'absolute';
-        timerDiv.style.top = '52%';
-        timerDiv.style.left = '50%';
         timerDiv.style.transform = 'translate(-50%, -50%)';
-        timerDiv.style.fontSize = '12rem'; 
+        timerDiv.style.fontSize = '3rem'; 
         timerDiv.style.fontFamily = 'seolleimcool-SemiBold';
         timerDiv.style.color = 'cornflowerblue';
         timerDiv.style.zIndex = '1000';
         timerDiv.style.textShadow = '1px 1px 8px white'; 
-        document.body.appendChild(timerDiv);
+        resetFrame.appendChild(timerDiv);
     }
 
     // 타이머 시작
@@ -62,15 +61,33 @@ document.getElementById('capture').addEventListener('click', () => {
         }
     }, 1000);
 
+    // glfx.js 캔버스 생성
+    const fxCanvas = fx.canvas();
+
     const takePhotoAndSend = () => {
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('canvas');
         const shutterSound = document.getElementById('shutterSound');
 
+        // 비디오에서 텍스처 생성
+        let videoTexture = fxCanvas.texture(video);
+
+        // 필터 적용
+        fxCanvas.draw(videoTexture)
+            .hueSaturation(0, 0.1) // saturate(110%)와 유사한 효과
+            .sepia(0.1) // sepia(10%)
+            .brightnessContrast(0.1, -0.1) // brightness, contrast
+            .update();
+
         // 비디오를 숨기고 캔버스를 표시
         video.style.display = 'none';
-        canvas.style.display = 'block';    
-        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.style.display = 'block';
+
+        // 캔버스에 결과 그리기
+        const context = canvas.getContext('2d');
+        context.drawImage(fxCanvas, 0, 0, canvas.width, canvas.height);
+        
+
         shutterSound.play(); // 사진 찍을 때 소리 재생
         const imageData = canvas.toDataURL('image/png');
         // 이미지 데이터를 배열에 추가
@@ -121,9 +138,10 @@ const sendAllImages = (images, frame) => {
     .catch(error => console.error(error));
 }
 
-
+// 비디오(웹캠)에 접근 요청
 navigator.mediaDevices.getUserMedia({ video: true })
     .then(stream => {
+        // 접근이 허용되면, 비디오 스트림을 'webcam'이라는 id를 가진 video 요소의 srcObject에 연결
         document.getElementById('webcam').srcObject = stream;
     })
     .catch(error => {

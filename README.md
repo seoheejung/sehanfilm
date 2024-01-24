@@ -39,5 +39,6 @@ npx electron-packager . sehanFilm --platform=win32 --arch=x64
 #### 💬 이후 작업
 ```
 CSS 작업 (완료)
+canvas에 필터 적용 (brightness(120%) contrast(80%) saturate(110%) sepia(10%))
 exe 실행파일 만들기
 ```
