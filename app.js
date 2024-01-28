@@ -1,3 +1,5 @@
+const https = require('https');
+const fs = require('fs');
 const express = require('express');
 const app = express();
 const routes = require('./routes/index');
@@ -25,5 +27,5 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 app.listen(process.env.PORT, () => {
-    console.log(`Server started on port ${process.env.PORT} : http://${process.env.MYIP}`);
+    console.log(`Server started on port ${process.env.PORT} : http://localhost:${process.env.PORT}`);
 });

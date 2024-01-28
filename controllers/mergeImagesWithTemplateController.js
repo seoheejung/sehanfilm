@@ -2,24 +2,39 @@ const fs = require('fs');
 const sharp = require('sharp');
 const moment = require('moment');
 
+const shots = {
+    verticalShot: [
+        /* 세로 */
+        { left: 46, top: 44 },
+        { left: 648, top: 44 },
+        { left: 46, top: 836 },
+        { left: 648, top: 836 },
+    ],
+    horizontalShot: [
+        /* 가로 */
+        { left: 46, top: 48 },
+        { left: 844, top: 48 },
+        { left: 46, top: 650 },
+        { left: 844, top: 650 },
+    ]
+};
+
 const mergeImagesWithTemplateController =  async (req, res, next) => {
+
     const imagesData = req.body.images;
     const frameData = req.body.frame;
+    const shot = req.body.shot;
+    console.log(shot)
 
     // 템플릿 이미지 로드
     const templatePath = `./public/image/${frameData}`;
+    console.log(templatePath)
     const template = sharp(templatePath);
 
     // 템플릿 이미지의 메타데이터
     // const templateMetadata = await template.metadata();
-
     // 템플릿 상에 각 이미지를 배치할 위치 정의
-    const positions = [
-        { left: 54, top: 39 },
-        { left: 866, top: 39 },
-        { left: 274, top: 657 },
-        { left: 1086, top: 657 },
-    ];
+    let positions = shots[shot];
 
     // 업로드된 base64 이미지 데이터를 버퍼로 변환하여 오버레이 배열 생성
     const imageOverlays = imagesData.map((data, index) => {

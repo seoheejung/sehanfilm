@@ -1,2 +1,2 @@
-MYIP=localhost
-PORT=3000
+IP=localhost:3003
+PORT=3003

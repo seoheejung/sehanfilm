@@ -42,7 +42,12 @@
 #webcam {
     display: block;
     background: #eee;
-    filter: brightness(117%) contrast(75%) saturate(105%) sepia(5%);
+    filter: brightness(115%) contrast(95%) saturate(95%); /* sepia(2%); */
+    /*
+    object-fit: cover;
+    width: 585px;
+    height: 780px;
+    */
 }
 #capture {
     position: absolute;

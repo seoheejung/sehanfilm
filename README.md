@@ -1,6 +1,7 @@
 ## 📫 웹캠과 node.JS로 인생네컷 만들기
 
 ### ✨ 사이트 주소
+http://localhost:3003
 
 ### 📌 과정
 1. 컴퓨터의 웹캠에 접근하여 사진을 4장 찍어 서버로 전송하기
@@ -39,6 +40,7 @@ npx electron-packager . sehanFilm --platform=win32 --arch=x64
 #### 💬 이후 작업
 ```
 CSS 작업 (완료)
-canvas에 필터 적용 (brightness(120%) contrast(80%) saturate(110%) sepia(10%))
+canvas에 필터 적용 (실패)
+세로 프레임 추가 (완료)
 exe 실행파일 만들기
 ```

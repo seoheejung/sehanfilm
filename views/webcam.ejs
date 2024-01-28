@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
-    <script src="http://evanw.github.io/glfx.js/glfx.js"></script>
+    <script src="/lib/glfx.js"></script>
     <link rel="stylesheet" href="/css/main.css" />
     <link rel="stylesheet" href="/css/webcam.css" />
 </head>
@@ -14,33 +14,57 @@
     <div class="parent-container">
         <a href='/' class="logo-text">sehanFilm</a>
         <span class="main-text" id="frame-text" >프레임을 선택해주세요.</span>
-        <div class="frame-choice">
+        <div class="frame-choice" id="frame-choice1"> 
             <div class="frame">
-                <img src="/image/choose_frame_2.jpg" alt="Frame 2" width="100">
+                <img src="/image/choose_frame_2_h.jpg" alt="Frame 2" width="100">
                 <label for="frame2">
-                    <input type="radio" id="frame2" name="frame" value="frame_2.jpg">
+                    <input type="radio" id="frame2" name="frame" value="frame_2_h.jpg" class="frame-h">
                     밤하늘
                 </label>
             </div>
             <div class="frame">
-                <img src="/image/choose_frame_3.jpg" alt="Frame 3" width="100">
+                <img src="/image/choose_frame_3_h.jpg" alt="Frame 3" width="100">
                 <label for="frame3">
-                    <input type="radio" id="frame3" name="frame" value="frame_3.jpg">
+                    <input type="radio" id="frame3" name="frame" value="frame_3_h.jpg" class="frame-h">
                     벚꽃
                 </label>
             </div>
             <div class="frame">
-                <img src="/image/choose_frame_4.jpg" alt="Frame 4" width="100">
+                <img src="/image/choose_frame_4_h.jpg" alt="Frame 4" width="100">
                 <label for="frame4">
-                    <input type="radio" id="frame4" name="frame" value="frame_4.jpg">
+                    <input type="radio" id="frame4" name="frame" value="frame_4_h.jpg" class="frame-h">
                     구름
                 </label>
             </div>
         </div>
+        <div class="frame-choice" id="frame-choice2"> 
+            <div class="frame">
+                <img src="/image/choose_frame_2_v.jpg" alt="Frame 2" width="100">
+                <label for="frame2">
+                    <input type="radio" id="frame2" name="frame" value="frame_2_v.jpg" class="frame-v">
+                    밤하늘
+                </label>
+            </div>
+            <div class="frame">
+                <img src="/image/choose_frame_3_v.jpg" alt="Frame 3" width="100">
+                <label for="frame3">
+                    <input type="radio" id="frame3" name="frame" value="frame_3_v.jpg" class="frame-v">
+                    벚꽃
+                </label>
+            </div>
+            <div class="frame">
+                <img src="/image/choose_frame_4_v.jpg" alt="Frame 4" width="100">
+                <label for="frame4">
+                    <input type="radio" id="frame4" name="frame" value="frame_4_v.jpg" class="frame-v">
+                    구름
+                </label>
+            </div>
+        </div>
+        
         <span class="main-text" id="camera-text" style="display: none;">촬영 버튼을 클릭해주세요</span>
         <div class="camera-ui" style="display: none;">
-            <video id="webcam" autoplay playsinline width="780" height="585"></video>
-            <canvas id="canvas" width="780" height="585"></canvas>
+            <video id="webcam" autoplay playsinline></video>
+            <canvas id="canvas"></canvas>
             <audio id="shutterSound" src="/lib/tfile.wav" preload="auto"></audio>
         
             <div class="controls" id="controls">
