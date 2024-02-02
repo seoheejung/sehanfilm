@@ -31,7 +31,7 @@ const updateLayoutForFrameSelection = (frameValue) => {
 }
 
 /* frame를 선택했을 경우, 촬영 화면이 나오게 작업 */
-function toggleDisplay(elements, displayStyle) {
+const toggleDisplay = (elements, displayStyle) => {
     elements.forEach((element) => {
         const domElement = document.querySelector(element);
         if (domElement) {
@@ -56,7 +56,7 @@ document.getElementById('select-frame').addEventListener('click', () => {
 });
 
 // 타이머 스타일 설정을 위한 함수
-function setupTimer(timerDiv) {
+const setupTimer = (timerDiv) => {
     timerDiv.setAttribute('id', 'timer');
     timerDiv.style.position = 'absolute';
     timerDiv.style.transform = 'translate(-35%, -70%)';
