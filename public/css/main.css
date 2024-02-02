@@ -16,11 +16,16 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    height: 105vh;
     background-image: url("/image/bg.jpg");
     background-size: cover;
     margin: 0;
     flex-direction: column;
+    overflow-y: scroll;
+}
+
+body::-webkit-scrollbar {
+    display: none; /* 크롬, 사파리, 오페라, 엣지 */
 }
 
 .parent-container {

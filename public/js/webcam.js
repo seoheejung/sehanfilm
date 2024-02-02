@@ -1,78 +1,87 @@
 let frame = 'frame_2_h.jpg';
 let shot = 'horizontalShot';  // verticalShot : 세로, horizontalShot : 가로
+const value_1 = 780;
+const value_2 = 585;
 
 document.querySelectorAll('.frame-h, .frame-v').forEach(function(radio) {
     radio.addEventListener('change', function() {
-        adjustVideoCanvasSize(radio.value);
+        updateLayoutForFrameSelection(radio.value);
     });
 });
 
-const adjustVideoCanvasSize = (frameValue) => {
+const updateLayoutForFrameSelection = (frameValue) => {
     const video = document.getElementById('webcam');
     const canvas = document.getElementById('canvas');
     console.log(frameValue.endsWith('_v.jpg'))
 
     if (frameValue.endsWith('_h.jpg')) {
         shot = 'horizontalShot';
-        video.width = 780;
-        video.height = 585;
-        canvas.width = 780;
-        canvas.height = 585;
+        video.width = value_1;
+        video.height = value_2;
+        canvas.width = value_1;
+        canvas.height = value_2;
     } else if (frameValue.endsWith('_v.jpg')) {
         shot = 'verticalShot';
         video.style.objectFit = 'cover';
-        video.width = 585;
-        video.height = 780;
-        canvas.width = 585;
-        canvas.height = 780;
+        video.width = value_2;
+        video.height = value_1;
+        canvas.width = value_2;
+        canvas.height = value_1;
     }
 }
 
+/* frame를 선택했을 경우, 촬영 화면이 나오게 작업 */
+function toggleDisplay(elements, displayStyle) {
+    elements.forEach((element) => {
+        const domElement = document.querySelector(element);
+        if (domElement) {
+            domElement.style.display = displayStyle;
+        }
+    });
+}
 document.querySelectorAll('input[name="frame"]').forEach((elem) => {
     elem.addEventListener("click", function(event) {
-        document.getElementById("frame-text").style.display = "none";
-        document.getElementById("frame-choice1").style.display = "none";
-        document.getElementById("frame-choice2").style.display = "none";
-        document.getElementById("camera-text").style.display = "block";
-        document.querySelector(".camera-ui").style.display = "block";
-        document.querySelector(".reset-frame").style.display = "flex";
+        toggleDisplay(["#frame-text", "#frame-choice1", "#frame-choice2"], "none");
+        toggleDisplay(["#camera-text", ".camera-ui"], "block");
+        toggleDisplay([".reset-frame"], "flex");
 
         frame = this.value;
     });
 });
 
 document.getElementById('select-frame').addEventListener('click', () => {
-    document.getElementById("frame-text").style.display = "block";
-    document.getElementById(".frame-choice1").style.display = "flex";
-    document.getElementById(".frame-choice2").style.display = "flex";
-    document.getElementById("camera-text").style.display = "none";
-    document.querySelector(".camera-ui").style.display = "none";
-    document.querySelector(".reset-frame").style.display = "none";
+    toggleDisplay(["#frame-text"], "block");
+    toggleDisplay(["#frame-choice1", "#frame-choice2"], "flex");
+    toggleDisplay(["#camera-text", ".camera-ui", ".reset-frame"], "none");
 });
 
+// 타이머 스타일 설정을 위한 함수
+function setupTimer(timerDiv) {
+    timerDiv.setAttribute('id', 'timer');
+    timerDiv.style.position = 'absolute';
+    timerDiv.style.transform = 'translate(-35%, -70%)';
+    timerDiv.style.fontSize = '4rem'; 
+    timerDiv.style.fontFamily = 'seolleimcool-SemiBold';
+    timerDiv.style.color = 'white';
+    timerDiv.style.zIndex = '1000';
+    timerDiv.style.textShadow = '1px 1px 8px white';
+    return timerDiv;
+}
+
+/* 촬영 버튼을 클릭했을 경우 */
 document.getElementById('capture').addEventListener('click', () => {
-    let count = 5; // 타이머를 5초로 설정
-    let timerDiv = document.getElementById('timer') || document.createElement('div');
-    let photoCount = 0; // 찍은 사진의 수를 추적
-    let imagesToSend = []; // 서버로 보낼 이미지 데이터를 담을 배열
     let captureButton = document.getElementById('controls'); 
     captureButton.style.display = 'none'; 
     document.getElementById('select-frame').style.display = 'none'; 
-    document.getElementById('timer')
+    let timerDiv = document.getElementById('timer') || document.createElement('div');
     const resetFrame = document.getElementById('reset-frame');
     if (!document.getElementById('timer')) {
-        // 타이머를 표시할 요소 설정
-        timerDiv.setAttribute('id', 'timer');
-        timerDiv.style.position = 'absolute';
-        timerDiv.style.transform = 'translate(-50%, -50%)';
-        timerDiv.style.fontSize = '4rem'; 
-        timerDiv.style.fontFamily = 'seolleimcool-SemiBold';
-        timerDiv.style.color = 'white';
-        timerDiv.style.zIndex = '1000';
-        timerDiv.style.textShadow = '1px 1px 8px white'; 
-        resetFrame.appendChild(timerDiv);
+        resetFrame.appendChild(setupTimer(timerDiv));
     }
-
+    
+    let photoCount = 0; // 찍은 사진의 수를 추적
+    let imagesToSend = []; // 서버로 보낼 이미지 데이터를 담을 배열
+    let count = 5; // 타이머를 5초로 설정
     // 타이머 시작
     timerDiv.textContent = count;
     let timerInterval = setInterval(function() {
@@ -96,6 +105,7 @@ document.getElementById('capture').addEventListener('click', () => {
 
     const takePhotoAndSend = () => {
         const video = document.getElementById('webcam');
+        video.style.transform = 'scaleX(-1)';
         const canvas = document.getElementById('canvas');
         const shutterSound = document.getElementById('shutterSound');
 
@@ -115,6 +125,10 @@ document.getElementById('capture').addEventListener('click', () => {
         // 캔버스에 결과 그리기
         console.log(shot)
         const context = canvas.getContext('2d');
+        context.save(); // 현재 상태 저장
+        context.scale(-1, 1); // x축 방향으로 좌우 반전
+        context.translate(-canvas.width, 0); // 반전된 상태에서 오른쪽으로 이동하여 정상 위치에 그리기
+
         if (shot === 'horizontalShot') {
             context.drawImage(fxCanvas, 0, 0, canvas.width, canvas.height);
         } else if (shot === 'verticalShot') {
@@ -136,7 +150,7 @@ document.getElementById('capture').addEventListener('click', () => {
             // 캔버스에 비디오의 특정 부분 그리기
             context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
         }
-        
+        context.restore(); // 캔버스 상태 복원
 
         shutterSound.play(); // 사진 찍을 때 소리 재생
         const imageData = canvas.toDataURL('image/png');

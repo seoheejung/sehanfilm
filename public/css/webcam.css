@@ -43,12 +43,15 @@
     display: block;
     background: #eee;
     filter: brightness(115%) contrast(95%) saturate(95%); /* sepia(2%); */
+
+    transform: scaleX(-1); /* 좌우 반전 */
     /*
     object-fit: cover;
     width: 585px;
     height: 780px;
     */
 }
+
 #capture {
     position: absolute;
     bottom: 20px;
@@ -97,7 +100,8 @@
 
 .reset-frame {
     width: 100%;
-    padding: 10px;
+    padding-top: 10px;
+    height: 50px;
     display: flex;
     justify-content: center;
     align-items: center;
