@@ -15,6 +15,8 @@ npm install path fs sharp nodemon moment dotenv ejs
 ```
 #### 💡 프로젝트 구조
 ```
+- config
+  - overlayPosition.js # 레이어의 위치 저장
 - controllers
   - imageSaveController.js # 촬영된 사진 저장 컨트롤러 (임시)
   - mergeImagesWithTemplateController.js # 촬영된 사진 병합 컨트롤러
@@ -23,8 +25,8 @@ npm install path fs sharp nodemon moment dotenv ejs
   - image # 이미지 파일이 있는 폴더
   - js # js 파일이 있는 폴더
   - lib # 다른 파일이 있는 폴더
-  - merged # 병합된 이미지가 저장되는 폴더
-  - uploads # 업로드된 이미지가 저장되는 폴더 (임시)
+  - merged # 촤종 병합된 이미지가 저장되는 폴더
+  - uploads # 1차 변합된 이미지가 저장되는 폴더
 - routes # 라우터 관리 폴더
 - view # ejs 폴더
 - app.js
@@ -42,5 +44,6 @@ npx electron-packager . sehanFilm --platform=win32 --arch=x64
 CSS 작업 (완료)
 canvas에 필터 적용 (실패)
 세로 프레임 추가 (완료)
-exe 실행파일 만들기
+촬영된 사진 위에 이미지 합성 추가 (완료)
+타이머 or 리모컨 사용 로직 분리 (완료)
 ```

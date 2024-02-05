@@ -37,7 +37,10 @@
             </div>
         </div>
         
-        <span class="main-text" id="camera-text" style="display: none;">촬영 버튼을 클릭해주세요</span>
+        <span class="main-text" id="camera-text" style="display: none;">
+            촬영 버튼을 클릭하면 타이머가 자동으로 돌아가며 촬영되며, <br>
+                리모컨은 "a, b, x, y" 버튼을 눌러 촬영하면 됩니다.
+        </span>
         <div class="camera-ui" style="display: none;">
             <video id="webcam" autoplay playsinline></video>
             <canvas id="canvas"></canvas>
@@ -62,5 +65,6 @@
 
     
     <script src="/js/webcam.js"></script>
+    <script src="/js/capture.js"></script>
 </body>
 </html>

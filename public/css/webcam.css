@@ -23,13 +23,21 @@
 
 .frame-choice img{
     width: 250px;
+    
 }
 
-.frame-choice label{
-    font-family: 'seolleimcool-SemiBold';
-    color: white;
-    padding: 10px;
+/* 기본 이미지 스타일 */
+.frame img {
+    transition: box-shadow 0.1s ease-in-out; /* 부드러운 전환 효과 */
 }
+
+/* 마우스 오버 시 이미지 스타일 */
+.frame img:hover {
+    box-shadow: 0 0 15px 5px rgba(255, 255, 255, 0.7); /* 밝은 흰색 후광 */
+    cursor: pointer; /* 커서를 포인터로 변경 */
+    cursor: url('/image/cursor_2.png'), pointer;
+}
+
 
 .camera-ui {
     position: relative;
@@ -45,11 +53,6 @@
     filter: brightness(115%) contrast(95%) saturate(95%); /* sepia(2%); */
 
     transform: scaleX(-1); /* 좌우 반전 */
-    /*
-    object-fit: cover;
-    width: 585px;
-    height: 780px;
-    */
 }
 
 #capture {
@@ -100,7 +103,7 @@
 
 .reset-frame {
     width: 100%;
-    padding-top: 10px;
+    padding-top: 20px;
     height: 50px;
     display: flex;
     justify-content: center;

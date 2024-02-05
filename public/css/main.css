@@ -22,6 +22,7 @@ body {
     margin: 0;
     flex-direction: column;
     overflow-y: scroll;
+    cursor: url('/image/cursor_1.png'), auto;
 }
 
 body::-webkit-scrollbar {
