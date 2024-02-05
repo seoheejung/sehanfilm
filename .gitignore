@@ -2,3 +2,5 @@ node_modules
 public/merged
 public/uploads
 .env
+controllers/mergeImagesWithTemplateController_backup.js
+public/image

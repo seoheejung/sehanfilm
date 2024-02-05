@@ -1,32 +1,28 @@
-let frame = 'frame_2_h.jpg';
-let shot = 'horizontalShot';  // verticalShot : 세로, horizontalShot : 가로
-const value_1 = 780;
-const value_2 = 585;
-
-document.querySelectorAll('.frame-h, .frame-v').forEach(function(radio) {
-    radio.addEventListener('change', function() {
-        updateLayoutForFrameSelection(radio.value);
-    });
-});
+let frame = '';
+let shot = '';  // verticalShot : 세로, horizontalShot : 가로
+const h_value_1 = 735;
+const h_value_2 = 551;
+const v_value_1 = 759;
+const v_value_2 = 569;
 
 const updateLayoutForFrameSelection = (frameValue) => {
     const video = document.getElementById('webcam');
     const canvas = document.getElementById('canvas');
     console.log(frameValue.endsWith('_v.jpg'))
 
-    if (frameValue.endsWith('_h.jpg')) {
+    if (frameValue.endsWith('_h')) {
         shot = 'horizontalShot';
-        video.width = value_1;
-        video.height = value_2;
-        canvas.width = value_1;
-        canvas.height = value_2;
-    } else if (frameValue.endsWith('_v.jpg')) {
+        video.width = h_value_1;
+        video.height = h_value_2;
+        canvas.width = h_value_1;
+        canvas.height = h_value_2;
+    } else if (frameValue.endsWith('_v')) {
         shot = 'verticalShot';
         video.style.objectFit = 'cover';
-        video.width = value_2;
-        video.height = value_1;
-        canvas.width = value_2;
-        canvas.height = value_1;
+        video.width = v_value_2;
+        video.height = v_value_1;
+        canvas.width = v_value_2;
+        canvas.height = v_value_1;
     }
 }
 
@@ -39,13 +35,16 @@ const toggleDisplay = (elements, displayStyle) => {
         }
     });
 }
-document.querySelectorAll('input[name="frame"]').forEach((elem) => {
-    elem.addEventListener("click", function(event) {
+
+document.querySelectorAll('.frame-select').forEach((imgElem) => {
+    imgElem.addEventListener("click", function(event) {
+        const selectedFrame = event.target.getAttribute('data-value');
+        console.log(selectedFrame)
+        updateLayoutForFrameSelection(selectedFrame);
         toggleDisplay(["#frame-text", "#frame-choice1", "#frame-choice2"], "none");
         toggleDisplay(["#camera-text", ".camera-ui"], "block");
         toggleDisplay([".reset-frame"], "flex");
-
-        frame = this.value;
+        frame = selectedFrame;
     });
 });
 
@@ -59,7 +58,7 @@ document.getElementById('select-frame').addEventListener('click', () => {
 const setupTimer = (timerDiv) => {
     timerDiv.setAttribute('id', 'timer');
     timerDiv.style.position = 'absolute';
-    timerDiv.style.transform = 'translate(-35%, -70%)';
+    timerDiv.style.transform = 'translate(-30%, -75%)';
     timerDiv.style.fontSize = '4rem'; 
     timerDiv.style.fontFamily = 'seolleimcool-SemiBold';
     timerDiv.style.color = 'white';
