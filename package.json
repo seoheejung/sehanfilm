@@ -2,6 +2,7 @@
   "name": "phomerge",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "app.js",
   "scripts": {
     "dev": "nodemon app.js",

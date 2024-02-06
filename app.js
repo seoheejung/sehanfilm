@@ -1,18 +1,19 @@
-const https = require('https');
-const fs = require('fs');
-const express = require('express');
+import express from 'express';
+import routes from './routes/index.js';
+import path from 'path';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+dotenv.config();
 const app = express();
-const routes = require('./routes/index');
-const path = require('path');
-require('dotenv').config();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.json({ limit: '50mb' })); // JSON 본문 파싱을 위한 설정
 app.use(express.static('public'));
 app.use('/', routes);
-app.use('merged', express.static(path.join(__dirname, 'merged')));
-app.use('uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('finalOutput', express.static(path.join(__dirname, 'finalOutput')));
+app.use('firstOutput', express.static(path.join(__dirname, 'firstOutput')));
 
 // 에러 핸들링 미들웨어
 app.use((err, req, res, next) => {

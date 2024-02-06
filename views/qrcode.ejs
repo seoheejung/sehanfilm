@@ -1,17 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
-    <!-- QR 코드 생성 라이브러리 -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-    <link rel="stylesheet" href="/css/main.css" />
-    <link rel="stylesheet" href="/css/qrcode.css" />
-    <title>sehamFilm</title>
-    <style>
-        
-    </style>
-</head>
+<%- include('partials/header.ejs'); %>
 <body>
     <div class="parent-container">
         <a href='/' class="logo-text">sehanFilm</a>
@@ -28,14 +15,7 @@
         <div style="margin: 20px;">
             <a href='/' class="main-text">돌아가기</a>
         </div>
-        <footer class=footer-class>
-            <div class=footer-container>
-                <div class="copy">
-                    사이트명 : sehanFilm
-                    © 2024 seo.hj All Rights Reserved.
-                </div>
-            </div>
-        </footer>
+        <%- include('partials/footer.ejs'); %>.
     </div> 
     
     <script>

@@ -69,7 +69,4 @@ const lovekeykeyArt = [
     { left: 1106, top: 760 },
 ]
 
-module.exports = {
-    shots: shots,
-    overlay: overlay
-};
+export { shots, overlay };

@@ -1,15 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>sehamFilm</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
-    <script src="/lib/glfx.js"></script>
-    <link rel="stylesheet" href="/css/main.css" />
-    <link rel="stylesheet" href="/css/webcam.css" />
-</head>
+<%- include('partials/header.ejs'); %>
 <body>
     <div class="parent-container">
         <a href='/' class="logo-text">sehanFilm</a>
@@ -38,7 +27,7 @@
         </div>
         
         <span class="main-text" id="camera-text" style="display: none;">
-            촬영 버튼을 클릭하면 타이머가 자동으로 돌아가며 촬영되며, <br>
+            촬영 버튼을 클릭하면 타이머로 자동 촬영되며, <br>
                 리모컨은 "a, b, x, y" 버튼을 눌러 촬영하면 됩니다.
         </span>
         <div class="camera-ui" style="display: none;">
@@ -53,17 +42,8 @@
         <div class="reset-frame" id="reset-frame" style="display: none;">
             <button id="select-frame">프레임 다시 선택하기</button> 
         </div>
-        <footer class=footer-class>
-            <div class=footer-container>
-                <div class="copy">
-                    사이트명 : sehanFilm
-                    © 2024 seo.hj All Rights Reserved.
-                </div>
-            </div>
-        </footer>
+        <%- include('partials/footer.ejs'); %>
     </div>
-
-    
     <script src="/js/webcam.js"></script>
     <script src="/js/capture.js"></script>
 </body>

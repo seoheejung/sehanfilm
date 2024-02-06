@@ -8,9 +8,11 @@ let photoCount = 0; // 찍은 사진의 수를 추적
 let imagesToSend = []; // 서버로 보낼 이미지 데이터를 담을 배열
 let isCaptureTimerActive = false; // captureTimerEvent가 실행되고 있는지를 추적할 변수
 
+/*
 document.addEventListener('keydown', function(event) {
     console.log(`Pressed key: ${event.key}`);
 });
+*/
 
 const updateLayoutForFrameSelection = (frameValue) => {
     const video = document.getElementById('webcam');
@@ -214,7 +216,7 @@ const sendAllImages = (images, frame, shot) => {
     // frame과 shot이 비어있지 않은지 확인
     if (frame !== '' && shot !== '') {
         // frame과 shot이 모두 제공되었을 때만 서버로 요청 전송
-        fetch('/save-images', {
+        fetch('/mergeImages', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -240,6 +242,5 @@ const sendAllImages = (images, frame, shot) => {
         alert('Frame or shot is not selected.');
         window.location.href='/'
     }
-    
 }
 

@@ -32,11 +32,9 @@ npm install path fs sharp nodemon moment dotenv ejs
 - app.js
 ```
 
-#### exe 실행파일 (electron)
+#### 서버 실행
 ```
-npm install --save-dev electron
-npx electron-packager . sehanFilm --platform=win32 --arch=x64
-/sehanFilm-win32-x64/sehanFilm.exe 파일 관리자 권한 실행 필요
+npm run dev
 ```
 
 #### 💬 이후 작업
@@ -46,4 +44,5 @@ canvas에 필터 적용 (실패)
 세로 프레임 추가 (완료)
 촬영된 사진 위에 이미지 합성 추가 (완료)
 타이머 or 리모컨 사용 로직 분리 (완료)
+CommonJS에서 ES modules로 변경
 ```

@@ -1,9 +1,7 @@
-const express = require('express');
-const moment = require('moment');
+import express from 'express';
+import moment from 'moment';
+import mergeImagesWithTemplate from '../controllers/mergeImagesWithTemplateController.js';
 const router = express.Router();
-const { saveImages } = require('../controllers/imageSaveController');
-const { mergeImagesWithTemplate } = require('../controllers/mergeImagesWithTemplateController');
-
 
 router.get('/', (req, res, next) => {
     try {
@@ -17,16 +15,16 @@ router.get('/qrcode', (req, res, next) => {
     try {
         const imageName = req.query.imageName;
         // IP 변경 필요
-        const imageUrl = `http://${process.env.IP}/merged/${imageName}`;
+        const imageUrl = `http://${process.env.IP}/finalOutput/${imageName}`;
         res.render('qrcode', { imageUrl: imageUrl });
     } catch (err) {
         next(err);
     }
 });
 
-router.post('/save-images', async (req, res, next) => {
+router.post('/mergeImages', async (req, res, next) => {
     try {
-        console.log(`[ ${moment().format("YYYY-MM-DD hh:mm:ss")} ] save-images Start`)
+        console.log(`[ ${moment().format("YYYY-MM-DD hh:mm:ss")} ] merge Images Start`)
         await mergeImagesWithTemplate(req, res, next);
         
     } catch (err) {
@@ -35,4 +33,4 @@ router.post('/save-images', async (req, res, next) => {
     }
 });
 
-module.exports = router;
+export default router;

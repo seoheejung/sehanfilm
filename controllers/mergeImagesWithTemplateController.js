@@ -1,18 +1,18 @@
-const fs = require('fs');
-const {shots, overlay} = require('../config/overlayPositions.js');
-const sharp = require('sharp');
-const moment = require('moment');
+import { shots, overlay } from '../config/overlayPositions.js';
+import fs from 'fs';
+import sharp from 'sharp';
+import moment from 'moment';
 
 const mergeImagesWithTemplateController =  async (req, res, next) => {
     const imagesData = req.body.images;
     const frameData = req.body.frame;
+    const ImageName = `sehanFilm_${moment().format('YYMMDD_HHmmss')}.png`;
 
     // 템플릿 이미지 로드
     const templatePath = `./public/image/${frameData}/frame.jpg`;
-    console.log(templatePath)
     const template = sharp(templatePath);
 
-    // 1차 이미지
+    /* 1차 이미지 */
     // 템플릿 상에 각 이미지를 배치할 위치 정의
     let shotPositions = shots[frameData];
 
@@ -27,54 +27,47 @@ const mergeImagesWithTemplateController =  async (req, res, next) => {
         };
     });
 
-    // 템플릿 이미지 위에 이미지들을 1차 합성
-    const mergedImageBuffer = await template
-        .composite(imageOverlays)
-        .toBuffer();
-    let outputPathUploads = '';
+    // 1차 합성 이미지 생성
+    const mergedImageBuffer = await template.composite(imageOverlays).toBuffer();
+    const firstOutputPath = `./public/${frameData !== 'film_frame_h' && frameData !== 'film_frame_v' ? 'firstOutput' : 'finalOutput'}/${ImageName}`;
+
     // 1차 합성된 이미지 저장
-    const uploadsImageName = `sehanFilm_${moment().format('YYMMDD_HHmmss')}.png`;
+    await fs.promises.writeFile(firstOutputPath, mergedImageBuffer);
+
+    // 2차 이미지 (1차 생성된 이미지 위에 png 파일 오버레이)
     if (frameData !== 'film_frame_h' && frameData !== 'film_frame_v') {
-        outputPathUploads = `./public/uploads/${uploadsImageName}`;
-    } else {
-        outputPathUploads = `./public/merged/${uploadsImageName}`;
-    }
-    await fs.promises.writeFile(outputPathUploads, mergedImageBuffer);
-
-    // 2차 이미지
-    let mergedImageName = '';
-    if (frameData !== 'film_frame_h' && frameData !== 'film_frame_v') {
-        let layerPosition = overlay[frameData];
-        const overlayImage = `./public/image/${frameData}/overlay.png`; // 오버레이할 이미지 경로
-
-        // 최종 이미지 저장
-        mergedImageName = `sehanFilm_${moment().format('YYMMDD_HHmmss')}.png`;
-        const outputPathMerged = `./public/merged/${mergedImageName}`;
-
+        const overlayImage = `./public/image/${frameData}/overlay.png`;
+        const finalOutputPath = `./public/finalOutput/${ImageName}`;
+        
         // 이미 합성된 기본 이미지 로드
-        let compositeImage = sharp(outputPathUploads);
+        let layerPosition = overlay[frameData];
+        let compositeImage = sharp(firstOutputPath);
 
-        // 오버레이 이미지 적용
+        // 오버레이 이미지를 기본 이미지에 합성
         const overlayOptions = { 
             input: overlayImage, 
             left: layerPosition.left, 
             top: layerPosition.top 
         };
-
-        // 오버레이 이미지를 기본 이미지에 합성
         compositeImage = await compositeImage.composite([overlayOptions]).toBuffer();
 
+        // sharp 캐시 비활성화
+        sharp.cache(false);
 
         // 최종 이미지 파일 저장
-        await fs.promises.writeFile(outputPathMerged, compositeImage);
-    } else {
-        mergedImageName = uploadsImageName;
+        await fs.promises.writeFile(finalOutputPath, compositeImage)
+        .then(() => {
+            // 임시 파일이 필요한 경우에만 삭제
+            fs.unlink(firstOutputPath, err => {
+                if (err) {
+                    console.error(`Error while deleting file ${firstOutputPath}:`, err);
+                }
+            });
+        });
     }
 
-    console.log(`[ ${moment().format("YYYY-MM-DD hh:mm:ss")} ] ${mergedImageName} merged complete`)
-    res.json({ message: 'All images saved successfully!', imageName: mergedImageName });
+    console.log(`[ ${moment().format("YYYY-MM-DD hh:mm:ss")} ] ${ImageName} merged complete`)
+    res.json({ message: 'All images saved successfully!', imageName: ImageName });
 };
 
-module.exports = {
-    mergeImagesWithTemplate: mergeImagesWithTemplateController
-};
+export default mergeImagesWithTemplateController;
