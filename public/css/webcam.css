@@ -36,6 +36,8 @@
     box-shadow: 0 0 15px 5px rgba(255, 255, 255, 0.7); /* 밝은 흰색 후광 */
     cursor: pointer; /* 커서를 포인터로 변경 */
     cursor: url('/image/cursor_2.png'), pointer;
+    transform: scale(1.3); /* 이미지 확대 */
+    transition: transform 0.3s ease-in-out; /* 부드러운 전환 효과 */
 }
 
 
