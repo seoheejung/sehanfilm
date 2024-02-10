@@ -55,7 +55,7 @@ const overlay = {
     gosim_frame_v:
         { left: 23, top: 940 },
     gosim_frame_h: 
-        { left: 157, top: 4 },
+        { left: 157, top: 22 },
     lovekeykey_frame_v: 
         { left: 8, top: 24 },
     lovekeykey_frame_h: 
