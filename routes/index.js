@@ -15,7 +15,7 @@ router.get('/qrcode', (req, res, next) => {
     try {
         const imageName = req.query.imageName;
         // IP 변경 필요
-        const imageUrl = `http://${process.env.IP}/finalOutput/${imageName}`;
+        const imageUrl = `${process.env.HTTPIP}/finalOutput/${imageName}`;
         res.render('qrcode', { imageUrl: imageUrl });
     } catch (err) {
         next(err);

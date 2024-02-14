@@ -2,6 +2,8 @@ import express from 'express';
 import routes from './routes/index.js';
 import path from 'path';
 import dotenv from 'dotenv';
+import https from 'https';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 dotenv.config();
 const app = express();
@@ -27,6 +29,16 @@ process.on('unhandledRejection', (reason, promise) => {
     // Application specific logging, throwing an error, or other logic here
 });
 
-app.listen(process.env.PORT, () => {
-    console.log(`Server started on port ${process.env.PORT} : http://localhost:${process.env.PORT}`);
+app.listen(process.env.HTTPPORT, () => {
+    console.log(`Server started on port ${process.env.HTTPPORT} : http://localhost:${process.env.HTTPPORT}`);
+});
+
+// SSL 인증서 파일
+const sslOptions = {
+    key: fs.readFileSync('public/lib/ssl/_wildcard.example.dev+3-key.pem'),
+    cert: fs.readFileSync('public/lib/ssl/_wildcard.example.dev+3.pem')
+};
+
+https.createServer(sslOptions, app).listen(process.env.HTTPSPORT, () => {
+    console.log(`HTTPS server started on port ${process.env.HTTPSPORT} : https://localhost:${process.env.HTTPSPORT}`);
 });

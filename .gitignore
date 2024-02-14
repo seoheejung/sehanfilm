@@ -4,3 +4,4 @@ public/firstOutput
 .env
 controllers/mergeImagesWithTemplateController_backup.js
 public/image
+public/lib/ssl

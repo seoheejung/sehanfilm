@@ -52,7 +52,7 @@
 #webcam {
     display: block;
     background: #eee;
-    filter: brightness(115%) contrast(95%) saturate(95%); /* sepia(2%); */
+    filter: brightness(100%) contrast(100%) saturate(90%)  sepia(4%);
 
     transform: scaleX(-1); /* 좌우 반전 */
 }

@@ -7,12 +7,7 @@ const v_value_2 = 569;
 let photoCount = 0; // 찍은 사진의 수를 추적
 let imagesToSend = []; // 서버로 보낼 이미지 데이터를 담을 배열
 let isCaptureTimerActive = false; // captureTimerEvent가 실행되고 있는지를 추적할 변수
-
-/*
-document.addEventListener('keydown', function(event) {
-    console.log(`Pressed key: ${event.key}`);
-});
-*/
+let isCapturing = false; // 촬영 중인지 여부를 추적하는 변수
 
 const updateLayoutForFrameSelection = (frameValue) => {
     const video = document.getElementById('webcam');
@@ -88,8 +83,8 @@ const takePhotoAndSend = (fxCanvas, imagesToSend) => {
 
     // 필터 적용
     fxCanvas.draw(videoTexture)
-        .hueSaturation(-0.05, -0.008)
-        .brightnessContrast(0.08, 0.1)
+        .hueSaturation(0.05, -0.01)
+        .brightnessContrast(0.02, -0.05)
         .update();
 
     // 비디오를 숨기고 캔버스를 표시
@@ -175,14 +170,21 @@ const captureTimerEvent = () => {
 
 /* 리모컨 촬영 */
 const captureButtonEvent = () => {
+    if (isCapturing) return; // 이미 촬영 중이면 함수를 종료
     let captureButton = document.getElementById('controls'); 
     captureButton.style.display = 'none'; 
     document.getElementById('select-frame').style.display = 'none'; 
     const fxCanvas = fx.canvas();
-
+    
+    console.log(photoCount)
     if (photoCount < 4) {
         takePhotoAndSend(fxCanvas, imagesToSend);
         photoCount++;
+        isCapturing = true; // 촬영 시작 상태로 설정
+        // 촬영 후 즉시 isCapturing 상태 업데이트
+        setTimeout(() => {
+            isCapturing = false;
+        }, 1000);
     } 
     if (photoCount === 4){
         setTimeout(() => {
@@ -196,6 +198,7 @@ const captureButtonEvent = () => {
 document.getElementById('capture').addEventListener('click', captureTimerEvent);
 document.addEventListener('keydown', (event) => {
     if (!isCaptureTimerActive && ['a', 'b', 'x', 'y'].includes(event.key)) {
+        console.log(isCapturing)
         captureButtonEvent();
     }
 });
