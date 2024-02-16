@@ -84,7 +84,7 @@ const takePhotoAndSend = (fxCanvas, imagesToSend) => {
     // 필터 적용
     fxCanvas.draw(videoTexture)
         .hueSaturation(0.05, -0.01)
-        .brightnessContrast(0.02, -0.05)
+        .brightnessContrast(-0.02, -0.02)
         .update();
 
     // 비디오를 숨기고 캔버스를 표시

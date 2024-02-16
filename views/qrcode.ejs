@@ -6,8 +6,8 @@
             <img src="<%= imageUrl %>" class="photo" alt="Merged Image">
         </div>
         <div style="margin: 20px;">
-            <span class="main-text">QR코드를 스캔하면 모바일로 다운로드 할 수 있습니다.
-                <br>리모컨은 제자리에 놔주세요.
+            <span class="main-text">QR코드를 스캔하면 구글드라이브에 연결됩니다.
+                <br>해당하는 사진을 다운 받으세요.
             </span>
         </div>
         <!-- QR 코드를 표시할 div -->
@@ -22,8 +22,9 @@
         // 페이지 로드 시 QR 코드 생성
         window.onload = function() {
             const imageUrl = "<%= imageUrl %>";
+            const googleUrl = "<%= googleUrl %>";
             const qrCodeDiv = document.getElementById('qr-code');
-            QRCode.toDataURL(imageUrl, function (err, url) {
+            QRCode.toDataURL(googleUrl, function (err, url) {
             if (err) {
                 console.error(err);
                 qrCodeDiv.textContent = 'QR 코드를 생성할 수 없습니다.';
