@@ -3,13 +3,26 @@
     <div class="parent-container">
         <a href='/' class="logo-text">sehanFilm</a>
 
-        <!-- 프레임 선택 안내 문구 -->
+        <!-- 서버 1회 인증 상태 표시 -->
+        <div style="margin-bottom: 16px; text-align: center;">
+            <% if (!isGoogleDriveAuthorized) { %>
+                <span class="main-text" style="font-size: 18px; color: #ff9800;">
+                    Google Drive 1회 인증 필요
+                </span>
+
+                <div style="margin-top: 10px;">
+                    <a href="/auth/google/start">
+                        <button>Google Drive 연결하기</button>
+                    </a>
+                </div>
+            <% } %>
+        </div>
+
+        <!-- 프레임 선택 안내 -->
         <span class="main-text" id="frame-text">프레임을 선택해주세요.</span>
 
-        <!-- 가로 프레임 선택 영역 -->
+        <!-- 가로 프레임 -->
         <div class="frame-choice" id="frame-choice1">
-
-            <!-- 가로 필름 프레임 -->
             <div class="frame">
                 <img
                     src="/image/c_film_frame_h.jpg"
@@ -20,7 +33,6 @@
                 >
             </div>
 
-            <!-- 가로 러브키키 프레임 -->
             <div class="frame">
                 <img
                     src="/image/c_lovekeykey_frame_h.jpg"
@@ -31,7 +43,6 @@
                 >
             </div>
 
-            <!-- 가로 고심 프레임 -->
             <div class="frame">
                 <img
                     src="/image/c_gosim_frame_h.jpg"
@@ -43,10 +54,8 @@
             </div>
         </div>
 
-        <!-- 세로 프레임 선택 영역 -->
+        <!-- 세로 프레임 -->
         <div class="frame-choice" id="frame-choice2">
-
-            <!-- 세로 필름 프레임 -->
             <div class="frame">
                 <img
                     src="/image/c_film_frame_v.jpg"
@@ -57,7 +66,6 @@
                 >
             </div>
 
-            <!-- 세로 러브키키 프레임 -->
             <div class="frame">
                 <img
                     src="/image/c_lovekeykey_frame_v.jpg"
@@ -68,7 +76,6 @@
                 >
             </div>
 
-            <!-- 세로 고심 프레임 -->
             <div class="frame">
                 <img
                     src="/image/c_gosim_frame_v.jpg"
@@ -80,13 +87,14 @@
             </div>
         </div>
 
+        <!-- 카메라 안내 -->
         <span class="main-text" id="camera-text" style="display: none;">
             촬영 버튼을 클릭하면 타이머로 자동 촬영되며,
             <br>
             리모컨은 "a, b, x, y" 버튼을 눌러 촬영하면 됩니다.
         </span>
 
-        <!-- 실제 카메라 UI 영역 -->
+        <!-- 카메라 UI -->
         <div class="camera-ui" style="display: none;">
             <video id="webcam" autoplay playsinline></video>
             <canvas id="canvas"></canvas>
@@ -96,7 +104,7 @@
             </div>
         </div>
 
-        <!-- 프레임 다시 선택하기 버튼 -->
+        <!-- 프레임 재선택 -->
         <div class="reset-frame" id="reset-frame" style="display: none;">
             <button id="select-frame">프레임 다시 선택하기</button>
         </div>
@@ -104,9 +112,6 @@
         <%- include('partials/footer.ejs'); %>
     </div>
 
-    <script>
-        window.GOOGLE_DRIVE_CLIENT_ID = "<%= googleClientId %>";
-    </script>
     <script src="/js/webcam.js"></script>
     <script src="/js/capture.js"></script>
 </body>

@@ -33,7 +33,6 @@ body {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    cursor: url('/image/cursor_1.png'), auto;
 }
 
 /* 스크롤바 숨김 */

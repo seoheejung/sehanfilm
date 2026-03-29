@@ -1,50 +1,78 @@
 import express from 'express';
 import moment from 'moment';
 import mergeImagesWithTemplate from '../controllers/mergeImagesWithTemplateController.js';
+import {
+    createAuthUrl,
+    validateOAuthState,
+    exchangeCodeAndSaveToken,
+    hasSavedRefreshToken,
+} from '../services/googleOAuthService.js';
 
 const router = express.Router();
 
 // 메인 페이지
-router.get('/', (req, res, next) => {
+router.get('/', async (req, res, next) => {
     try {
+        // 메인 화면에서 현재 인증 상태를 보여주기 위해 서버에서 확인
+        const isGoogleDriveAuthorized = await hasSavedRefreshToken();
+
         res.render('webcam', {
-            googleClientId: process.env.GOOGLE_DRIVE_CLIENT_ID
+            isGoogleDriveAuthorized,
         });
     } catch (err) {
         next(err);
     }
 });
 
-// QR 코드 출력 페이지
+// Google 승인 시작
+router.get('/auth/google/start', async (req, res, next) => {
+    try {
+        const { authUrl } = await createAuthUrl();
+        return res.redirect(authUrl);
+    } catch (err) {
+        next(err);
+    }
+});
+
+// Google callback
+router.get('/auth/google/callback', async (req, res, next) => {
+    try {
+        const code = req.query.code;
+        const state = req.query.state;
+
+        validateOAuthState(state);
+        await exchangeCodeAndSaveToken(code);
+
+        return res.send(
+            '<script type="text/javascript">alert("Google Drive 1회 인증이 완료되었습니다. 이제 촬영 후 자동 업로드가 가능합니다."); window.location="/";</script>'
+        );
+    } catch (err) {
+        next(err);
+    }
+});
+
+// QR 코드 페이지
 router.get('/qrcode', (req, res, next) => {
     try {
-        // 로컬 미리보기 이미지 파일명
         const imageName = req.query.imageName;
-
-        // Google Drive 업로드 후 받은 다운로드 링크
         const googleUrl = req.query.googleUrl || '';
 
-        // 로컬 미리보기 이미지 URL 생성
         const imageUrl = `${process.env.HTTPIP}/2026_finalOutput/${imageName}`;
 
-        // QR 페이지 렌더링
         res.render('qrcode', { imageUrl, googleUrl });
     } catch (err) {
         next(err);
     }
 });
 
-// 이미지 합성 + Drive 업로드 API
+// 이미지 합성 + 업로드
 router.post('/mergeImages', async (req, res, next) => {
     try {
         console.log(`[ ${moment().format('YYYY-MM-DD HH:mm:ss')} ] merge Images Start`);
-
-        // 실제 합성 + Google Drive 업로드 처리
         await mergeImagesWithTemplate(req, res, next);
     } catch (err) {
         next(err);
     }
 });
 
-// 라우터 export
 export default router;

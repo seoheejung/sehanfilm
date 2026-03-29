@@ -32,7 +32,6 @@
     transform: translateY(-2px) scale(1.03);
     box-shadow: 0 0 18px rgba(255, 255, 255, 0.35);
     filter: brightness(1.04);
-    cursor: url('/image/cursor_2.png'), pointer;
 }
 
 /* 카메라 안내 문구 */
