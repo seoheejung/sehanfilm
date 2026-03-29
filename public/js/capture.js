@@ -1,208 +1,341 @@
+// 현재 선택된 프레임 값
 let frame = '';
-let shot = '';  // verticalShot : 세로, horizontalShot : 가로
+
+// 현재 촬영 방향 상태
+let shot = '';
+
+// 가로 프레임 비디오/캔버스 너비
 const h_value_1 = 735;
+
+// 가로 프레임 비디오/캔버스 높이
 const h_value_2 = 551;
+
+// 세로 프레임 비디오/캔버스 높이
 const v_value_1 = 759;
+
+// 세로 프레임 비디오/캔버스 너비
 const v_value_2 = 569;
-let photoCount = 0; // 찍은 사진의 수를 추적
-let imagesToSend = []; // 서버로 보낼 이미지 데이터를 담을 배열
-let isCaptureTimerActive = false; // captureTimerEvent가 실행되고 있는지를 추적할 변수
-let isCapturing = false; // 촬영 중인지 여부를 추적하는 변수
 
+// 현재까지 촬영한 사진 수
+let photoCount = 0;
+
+// 서버로 전송할 base64 이미지 배열
+let imagesToSend = [];
+
+// 타이머 촬영이 진행 중인지 여부
+let isCaptureTimerActive = false;
+
+// 수동 촬영 중 중복 입력 방지용 상태
+let isCapturing = false;
+
+let accessToken = '';
+
+// Google 토큰 요청
+const getGoogleAccessToken = () => {
+    return new Promise((resolve, reject) => {
+        const client = google.accounts.oauth2.initTokenClient({
+            client_id: window.GOOGLE_DRIVE_CLIENT_ID,
+            scope: 'https://www.googleapis.com/auth/drive.file',
+            callback: (response) => {
+                if (response.error) {
+                    reject(response);
+                } else {
+                    accessToken = response.access_token;
+                    resolve(accessToken);
+                }
+            }
+        });
+
+        client.requestAccessToken();
+    });
+};
+
+// 선택한 프레임에 따라 비디오와 캔버스 크기 조정
 const updateLayoutForFrameSelection = (frameValue) => {
+    // 웹캠 비디오 DOM
     const video = document.getElementById('webcam');
-    const canvas = document.getElementById('canvas');
-    // console.log(frameValue.endsWith('_v.jpg'))
 
+    // 캡처 결과를 그릴 캔버스 DOM
+    const canvas = document.getElementById('canvas');
+
+    // 가로 프레임이면 horizontalShot 상태로 설정
     if (frameValue.endsWith('_h')) {
         shot = 'horizontalShot';
+
         video.width = h_value_1;
         video.height = h_value_2;
+
         canvas.width = h_value_1;
         canvas.height = h_value_2;
-    } else if (frameValue.endsWith('_v')) {
+
+        // 가로에서는 objectFit 기본값 사용
+        video.style.objectFit = 'fill';
+    }
+
+    // 세로 프레임이면 verticalShot 상태로 설정
+    else if (frameValue.endsWith('_v')) {
         shot = 'verticalShot';
+
+        // 세로 비율을 맞추기 위해 cover 사용
         video.style.objectFit = 'cover';
+
         video.width = v_value_2;
         video.height = v_value_1;
+
         canvas.width = v_value_2;
         canvas.height = v_value_1;
     }
-}
+};
 
-/* frame를 선택했을 경우, 촬영 화면이 나오게 작업 */
+// 화면 표시/숨김 공통 함수
 const toggleDisplay = (elements, displayStyle) => {
     elements.forEach((element) => {
         const domElement = document.querySelector(element);
+
+        // DOM이 있으면 display 변경
         if (domElement) {
             domElement.style.display = displayStyle;
         }
     });
-}
+};
 
+// 촬영 세션 상태 초기화
+const resetCaptureState = () => {
+    photoCount = 0;
+    imagesToSend = [];
+    isCaptureTimerActive = false;
+    isCapturing = false;
+};
+
+// 프레임 이미지 클릭 시 촬영 화면으로 전환
 document.querySelectorAll('.frame-select').forEach((imgElem) => {
-    imgElem.addEventListener("click", function(event) {
+    // 각 프레임 썸네일에 클릭 이벤트 등록
+    imgElem.addEventListener('click', function(event) {
         const selectedFrame = event.target.getAttribute('data-value');
-        console.log(selectedFrame)
+
+        // 선택 프레임 기준으로 비디오/캔버스 크기 조정
         updateLayoutForFrameSelection(selectedFrame);
-        toggleDisplay(["#frame-text", "#frame-choice1", "#frame-choice2"], "none");
-        toggleDisplay(["#camera-text", ".camera-ui"], "block");
-        toggleDisplay([".reset-frame"], "flex");
+
+        // 프레임 선택 화면 숨김
+        toggleDisplay(['#frame-text', '#frame-choice1', '#frame-choice2'], 'none');
+
+        // 카메라 UI 표시
+        toggleDisplay(['#camera-text', '.camera-ui'], 'block');
+
+        // 프레임 재선택 버튼 표시
+        toggleDisplay(['.reset-frame'], 'flex');
+
+        // 현재 선택 프레임 저장
         frame = selectedFrame;
+
+        // 새 세션 시작이므로 상태 초기화
+        resetCaptureState();
     });
 });
 
+// 프레임 다시 선택하기 버튼 클릭
 document.getElementById('select-frame').addEventListener('click', () => {
-    toggleDisplay(["#frame-text"], "block");
-    toggleDisplay(["#frame-choice1", "#frame-choice2"], "flex");
-    toggleDisplay(["#camera-text", ".camera-ui", ".reset-frame"], "none");
+    // 안내 문구 표시
+    toggleDisplay(['#frame-text'], 'block');
+
+    // 프레임 선택 목록 다시 표시
+    toggleDisplay(['#frame-choice1', '#frame-choice2'], 'flex');
+
+    // 카메라 영역 숨김
+    toggleDisplay(['#camera-text', '.camera-ui', '.reset-frame'], 'none');
+
+    // 내부 상태 초기화
+    resetCaptureState();
 });
 
-// 타이머 스타일 설정을 위한 함수
+// 타이머 숫자 DOM 스타일 적용
 const setupTimer = (timerDiv) => {
     timerDiv.setAttribute('id', 'timer');
     timerDiv.style.position = 'absolute';
     timerDiv.style.transform = 'translate(-30%, -75%)';
-    timerDiv.style.fontSize = '4rem'; 
+    timerDiv.style.fontSize = '4rem';
     timerDiv.style.fontFamily = 'seolleimcool-SemiBold';
     timerDiv.style.color = 'white';
     timerDiv.style.zIndex = '1000';
     timerDiv.style.textShadow = '1px 1px 8px white';
     return timerDiv;
-}
+};
 
-/* 촬영 이벤트 */
+// 실제 1장 촬영 후 배열에 저장
 const takePhotoAndSend = (fxCanvas, imagesToSend) => {
+    // 비디오 DOM 참조
     const video = document.getElementById('webcam');
+
+    // 비디오 화면은 좌우 반전 상태 유지
     video.style.transform = 'scaleX(-1)';
+
+    // 캔버스 DOM 참조
     const canvas = document.getElementById('canvas');
+
+    // 셔터 사운드 DOM 참조
     const shutterSound = document.getElementById('shutterSound');
 
-    // 비디오에서 텍스처 생성
-    let videoTexture = fxCanvas.texture(video);
+    // 비디오 프레임을 glfx 텍스처로 생성
+    const videoTexture = fxCanvas.texture(video);
 
-    // 필터 적용
+    // glfx 필터 적용
     fxCanvas.draw(videoTexture)
         .hueSaturation(0.05, -0.01)
         .brightnessContrast(-0.02, -0.02)
         .update();
 
-    // 비디오를 숨기고 캔버스를 표시
     video.style.display = 'none';
     canvas.style.display = 'block';
 
-    // 캔버스에 결과 그리기
+    // 2D 컨텍스트 생성
     const context = canvas.getContext('2d');
-    context.save(); // 현재 상태 저장
-    context.scale(-1, 1); // x축 방향으로 좌우 반전
-    context.translate(-canvas.width, 0); // 반전된 상태에서 오른쪽으로 이동하여 정상 위치에 그리기
+    context.save();
 
+    // 좌우 반전 적용
+    context.scale(-1, 1);
+
+    // 반전 후 보정 이동
+    context.translate(-canvas.width, 0);
+
+    // 가로 프레임이면 fxCanvas를 전체 크기로 그림
     if (shot === 'horizontalShot') {
         context.drawImage(fxCanvas, 0, 0, canvas.width, canvas.height);
-    } else if (shot === 'verticalShot') {
-        // 비디오의 실제 크기
-        const videoWidth = video.videoWidth;
-        const videoHeight = video.videoHeight;
-    
-        // 캔버스에 그릴 영역의 크기
-        const targetWidth = canvas.width;
-        const targetHeight = canvas.height;
-    
-        // 캡처할 비디오의 영역 계산
-        const scale = Math.min(videoWidth / targetWidth, videoHeight / targetHeight);
-        const sx = (videoWidth - scale * targetWidth) / 2;
-        const sy = (videoHeight - scale * targetHeight) / 2;
-        const sWidth = scale * targetWidth;
-        const sHeight = scale * targetHeight;
-    
-        // 캔버스에 비디오의 특정 부분 그리기
-        context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
     }
-    context.restore(); // 캔버스 상태 복원
 
-    shutterSound.play(); // 사진 찍을 때 소리 재생
+    // 세로 프레임도 동일하게 fxCanvas 기준으로 그림
+    else if (shot === 'verticalShot') {
+        context.drawImage(fxCanvas, 0, 0, canvas.width, canvas.height);
+    }
+
+    // 저장했던 컨텍스트 상태 복원
+    context.restore();
+
+    // 셔터 소리 재생
+    shutterSound.play();
+
+    // 캔버스를 PNG base64로 변환
     const imageData = canvas.toDataURL('image/png');
-    // 이미지 데이터를 배열에 추가
+
+    // 서버 전송 배열에 추가
     imagesToSend.push(imageData);
-    
-    // 1초 동안 현재 화면 유지
+
+    // 1초 후 미리보기 캔버스 숨기고 비디오 복귀
     setTimeout(() => {
         canvas.style.display = 'none';
         video.style.display = 'block';
     }, 1000);
-}
+};
 
-/* 타이머 촬영 */
+// 타이머 촬영 시작
 const captureTimerEvent = () => {
+    // 중복 타이머 실행 방지
+    if (isCaptureTimerActive) {
+        return;
+    }
+
+    // 타이머 촬영 시작 상태로 전환
     isCaptureTimerActive = true;
-    let captureButton = document.getElementById('controls'); 
-    captureButton.style.display = 'none'; 
-    document.getElementById('select-frame').style.display = 'none'; 
-    // 타이머 설정
+
+    // 촬영 버튼 영역 DOM
+    const captureButton = document.getElementById('controls');
+    captureButton.style.display = 'none';
+
+    // 프레임 재선택 버튼 숨김
+    document.getElementById('select-frame').style.display = 'none';
+
+    // 기존 timer DOM이 있으면 재사용, 없으면 생성
     let timerDiv = document.getElementById('timer') || document.createElement('div');
+
+    // 타이머를 붙일 부모 DOM
     const resetFrame = document.getElementById('reset-frame');
+
+    // timer DOM이 처음 생성되는 경우 스타일 적용 후 append
     if (!document.getElementById('timer')) {
         resetFrame.appendChild(setupTimer(timerDiv));
     }
-    
+
+    // 새 타이머 세션 시작 전 상태 초기화
     photoCount = 0;
     imagesToSend = [];
-    let count = 5; // 타이머 5초 설정
-    const fxCanvas = fx.canvas(); // glfx.js 캔버스 생성
-    // 타이머 시작
+    let count = 5;
+    const fxCanvas = fx.canvas();
     timerDiv.textContent = count;
-    let timerInterval = setInterval(() => {
+
+    // 1초마다 카운트 감소
+    const timerInterval = setInterval(() => {
         count--;
+
+        // 0보다 크면 숫자 표시, 아니면 빈칸
         timerDiv.textContent = count > 0 ? count : '';
+
+        // 아직 4장 미만이고 카운트가 끝났으면 촬영
         if (photoCount < 4 && count === 0) {
             takePhotoAndSend(fxCanvas, imagesToSend);
             photoCount++;
-            count = 6; // 카운트다운 리셋
-        } else if (photoCount === 4){
-            clearInterval(timerInterval); // 모든 사진 촬영 완료 후 타이머 중단
+            count = 6;
+        }
+
+        // 4장 촬영이 끝났으면 업로드
+        else if (photoCount === 4) {
+            // 타이머 종료
+            clearInterval(timerInterval);
             isCaptureTimerActive = false;
             timerDiv.textContent = '';
-            sendAllImages(imagesToSend, frame, shot);
-            captureButton.style.display = 'flex'; 
+            sendAllImages(imagesToSend, frame);
+            captureButton.style.display = 'flex';
         }
     }, 1000);
-}
+};
 
-/* 리모컨 촬영 */
+// 수동 1장 촬영
 const captureButtonEvent = () => {
-    if (isCapturing) return; // 이미 촬영 중이면 함수를 종료
-    let captureButton = document.getElementById('controls'); 
-    captureButton.style.display = 'none'; 
-    document.getElementById('select-frame').style.display = 'none'; 
+    // 이미 촬영 중이면 무시
+    if (isCapturing) return;
+
+    // 촬영 버튼 영역 DOM
+    const captureButton = document.getElementById('controls');
+    captureButton.style.display = 'none';
+    document.getElementById('select-frame').style.display = 'none';
+
+    // glfx 캔버스 생성
     const fxCanvas = fx.canvas();
-    
-    console.log(photoCount)
+
+    // 새 세션 첫 장이면 전송 배열 초기화
+    if (photoCount === 0) {
+        imagesToSend = [];
+    }
+
+    // 4장 미만이면 촬영 진행
     if (photoCount < 4) {
         takePhotoAndSend(fxCanvas, imagesToSend);
         photoCount++;
-        isCapturing = true; // 촬영 시작 상태로 설정
-        // 촬영 후 즉시 isCapturing 상태 업데이트
+        isCapturing = true;
         setTimeout(() => {
             isCapturing = false;
         }, 1000);
-    } 
-    if (photoCount === 4){
+    }
+
+    // 4장 촬영이 끝났으면 서버로 업로드
+    if (photoCount === 4) {
         setTimeout(() => {
-            sendAllImages(imagesToSend, frame, shot);
-            captureButton.style.display = 'flex'; 
+            sendAllImages(imagesToSend, frame);
+            captureButton.style.display = 'flex';
         }, 1000);
     }
-}
+};
 
-/* 버튼을 클릭하거나, a, b, x, y를 눌렀을 경우 경우 촬영 이벤트 실행 */
+// 촬영 버튼 클릭 시 타이머 촬영 시작
 document.getElementById('capture').addEventListener('click', captureTimerEvent);
+
+// 키보드 a,b,x,y 입력 시 수동 촬영
 document.addEventListener('keydown', (event) => {
+    // 타이머 촬영 중이 아닐 때만 허용
     if (!isCaptureTimerActive && ['a', 'b', 'x', 'y'].includes(event.key)) {
-        console.log(isCapturing)
         captureButtonEvent();
     }
 });
 
+// 중앙 토스트 알림 설정
 const ToastCheck = Swal.mixin({
     toast: true,
     position: 'center-center',
@@ -210,40 +343,55 @@ const ToastCheck = Swal.mixin({
     timer: 3000,
     timerProgressBar: true,
     didOpen: (toast) => {
-        toast.addEventListener('mouseenter', Swal.stopTimer)
-        toast.addEventListener('mouseleave', Swal.resumeTimer)
+        toast.addEventListener('mouseenter', Swal.stopTimer);
+        toast.addEventListener('mouseleave', Swal.resumeTimer);
     }
-})
+});
 
-const sendAllImages = (images, frame, shot) => {
-    // frame과 shot이 비어있지 않은지 확인
-    if (frame !== '' && shot !== '') {
-        // frame과 shot이 모두 제공되었을 때만 서버로 요청 전송
-        fetch('/mergeImages', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ images: images, frame: frame, shot: shot })
-        })
-        .then(response => response.json())
-        .then(data => {
+// 4장 모두 서버로 전송
+const sendAllImages = async (images, frame) => {
+    if (frame !== '') {
+
+        try {
+            // 먼저 토큰 받기
+            if (!accessToken) {
+                await getGoogleAccessToken();
+            }
+
+            const response = await fetch('/mergeImages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ images, frame, accessToken })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw { status: response.status, data };
+            }
+
             ToastCheck.fire({
                 icon: 'success',
                 title: data.message
-            })
-            if (data.imageName) {
-                // 서버로부터 imagePath를 받았다면, qrcode 페이지로 이동
-                window.location.href = `/qrcode?imageName=${data.imageName}`;
-            } else {
-                alert('Error: Image path not received');
-            }
-        })
-        .catch(error => console.error(error));
-    } else {
-        // frame 또는 shot이 비어있으면 경고 메시지 표시
-        alert('Frame or shot is not selected.');
-        window.location.href='/'
-    }
-}
+            });
 
+            if (data.imageName && data.googleUrl) {
+                window.location.href = `/qrcode?imageName=${encodeURIComponent(data.imageName)}&googleUrl=${encodeURIComponent(data.googleUrl)}`;
+            }
+
+        } catch (error) {
+
+            Swal.fire({
+                icon: 'error',
+                title: '업로드 실패',
+                text: error.data?.message || '이미지 처리 중 오류 발생'
+            });
+        }
+
+    } else {
+        alert('Frame is not selected.');
+        window.location.href = '/';
+    }
+};

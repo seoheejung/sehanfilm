@@ -2,48 +2,111 @@
 <body>
     <div class="parent-container">
         <a href='/' class="logo-text">sehanFilm</a>
-        <span class="main-text" id="frame-text" >프레임을 선택해주세요.</span>
-        <div class="frame-choice" id="frame-choice1"> 
+
+        <!-- 프레임 선택 안내 문구 -->
+        <span class="main-text" id="frame-text">프레임을 선택해주세요.</span>
+
+        <!-- 가로 프레임 선택 영역 -->
+        <div class="frame-choice" id="frame-choice1">
+
+            <!-- 가로 필름 프레임 -->
             <div class="frame">
-                <img src="/image/c_film_frame_h.jpg" alt="c_film_frame_h" width="100" class="frame-select" id="frame-h" data-value="film_frame_h">
+                <img
+                    src="/image/c_film_frame_h.jpg"
+                    alt="c_film_frame_h"
+                    width="100"
+                    class="frame-select"
+                    data-value="film_frame_h"
+                >
             </div>
+
+            <!-- 가로 러브키키 프레임 -->
             <div class="frame">
-                <img src="/image/c_lovekeykey_frame_h.jpg" alt="c_lovekeykey_frame_h" width="100" class="frame-select" id="frame-h" data-value="lovekeykey_frame_h">
+                <img
+                    src="/image/c_lovekeykey_frame_h.jpg"
+                    alt="c_lovekeykey_frame_h"
+                    width="100"
+                    class="frame-select"
+                    data-value="lovekeykey_frame_h"
+                >
             </div>
+
+            <!-- 가로 고심 프레임 -->
             <div class="frame">
-                <img src="/image/c_gosim_frame_h.jpg" alt="c_gosim_frame_h" width="100" class="frame-select" id="frame-h" data-value="gosim_frame_h">
+                <img
+                    src="/image/c_gosim_frame_h.jpg"
+                    alt="c_gosim_frame_h"
+                    width="100"
+                    class="frame-select"
+                    data-value="gosim_frame_h"
+                >
             </div>
         </div>
-        <div class="frame-choice" id="frame-choice2"> 
+
+        <!-- 세로 프레임 선택 영역 -->
+        <div class="frame-choice" id="frame-choice2">
+
+            <!-- 세로 필름 프레임 -->
             <div class="frame">
-                <img src="/image/c_film_frame_v.jpg" alt="c_film_frame_v" width="100" class="frame-select" id="frame-v" data-value="film_frame_v">
+                <img
+                    src="/image/c_film_frame_v.jpg"
+                    alt="c_film_frame_v"
+                    width="100"
+                    class="frame-select"
+                    data-value="film_frame_v"
+                >
             </div>
+
+            <!-- 세로 러브키키 프레임 -->
             <div class="frame">
-                <img src="/image/c_lovekeykey_frame_v.jpg" alt="c_lovekeykey_frame_v" width="100" class="frame-select" id="frame-v" data-value="lovekeykey_frame_v">
+                <img
+                    src="/image/c_lovekeykey_frame_v.jpg"
+                    alt="c_lovekeykey_frame_v"
+                    width="100"
+                    class="frame-select"
+                    data-value="lovekeykey_frame_v"
+                >
             </div>
+
+            <!-- 세로 고심 프레임 -->
             <div class="frame">
-                <img src="/image/c_gosim_frame_v.jpg" alt="c_gosim_frame_v" width="100" class="frame-select" id="frame-v" data-value="gosim_frame_v">
+                <img
+                    src="/image/c_gosim_frame_v.jpg"
+                    alt="c_gosim_frame_v"
+                    width="100"
+                    class="frame-select"
+                    data-value="gosim_frame_v"
+                >
             </div>
         </div>
-        
+
         <span class="main-text" id="camera-text" style="display: none;">
-            촬영 버튼을 클릭하면 타이머로 자동 촬영되며, <br>
-                리모컨은 "a, b, x, y" 버튼을 눌러 촬영하면 됩니다.
+            촬영 버튼을 클릭하면 타이머로 자동 촬영되며,
+            <br>
+            리모컨은 "a, b, x, y" 버튼을 눌러 촬영하면 됩니다.
         </span>
+
+        <!-- 실제 카메라 UI 영역 -->
         <div class="camera-ui" style="display: none;">
             <video id="webcam" autoplay playsinline></video>
             <canvas id="canvas"></canvas>
             <audio id="shutterSound" src="/lib/tfile.wav" preload="auto"></audio>
-        
             <div class="controls" id="controls">
                 <button id="capture">촬영</button>
             </div>
         </div>
+
+        <!-- 프레임 다시 선택하기 버튼 -->
         <div class="reset-frame" id="reset-frame" style="display: none;">
-            <button id="select-frame">프레임 다시 선택하기</button> 
+            <button id="select-frame">프레임 다시 선택하기</button>
         </div>
+
         <%- include('partials/footer.ejs'); %>
     </div>
+
+    <script>
+        window.GOOGLE_DRIVE_CLIENT_ID = "<%= googleClientId %>";
+    </script>
     <script src="/js/webcam.js"></script>
     <script src="/js/capture.js"></script>
 </body>

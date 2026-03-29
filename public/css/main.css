@@ -1,3 +1,4 @@
+/* 타이틀 폰트 */
 @font-face {
     font-family: 'Giants-Inline';
     src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2307-1@1.1/Giants-Inline.woff2') format('woff2');
@@ -5,6 +6,7 @@
     font-style: normal;
 }
 
+/* 본문 폰트 */
 @font-face {
     font-family: 'seolleimcool-SemiBold';
     src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2312-1@1.1/seolleimcool-SemiBold.woff2') format('woff2');
@@ -12,60 +14,103 @@
     font-style: normal;
 }
 
+/* 전체 페이지 기본 설정 */
+html,
 body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 105vh;
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+}
+
+/* body 전체 배경 및 중앙 정렬 */
+body {
+    background-color: #000;
     background-image: url("/image/bg.jpg");
     background-size: cover;
-    margin: 0;
-    flex-direction: column;
-    overflow-y: scroll;
+    background-position: center;
+    background-attachment: fixed;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
     cursor: url('/image/cursor_1.png'), auto;
 }
 
+/* 스크롤바 숨김 */
 body::-webkit-scrollbar {
-    display: none; /* 크롬, 사파리, 오페라, 엣지 */
+    display: none;
 }
 
+/* 전체 페이지 컨테이너 */
 .parent-container {
+    width: 100%;
+    max-width: 1200px;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    position: relative;
-    text-align: center;
-}
-
-.logo-text {
-    margin-top: 5px;
-    text-align: center;
-    font-family: 'Giants-Inline'; 
-    color : #62f5da;
-    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-    position: relative;
-    font-size: -webkit-xxx-large;
-    text-decoration-line: none;
-}
-
-.main-text {
-    position: relative;
-    font-family: 'seolleimcool-SemiBold';
-    text-align: center;
-    text-shadow: 1px 1px 4px rgba(0, 0, 0, .5); 
-    margin-bottom: 20px;
-    color: white; 
-}
-
-.footer-class {
     align-items: center;
-    justify-content: center;
-    display: flex;
-    margin-top: 10px;
+    padding: 24px 20px 16px;
+    box-sizing: border-box;
 }
 
+/* 상단 로고 */
+.logo-text {
+    font-family: 'Giants-Inline';
+    font-size: clamp(42px, 7vw, 72px);
+    color: #62f5da;
+    text-decoration: none;
+    text-align: center;
+    margin-top: 6px;
+    margin-bottom: 20px;
+    text-shadow:
+        -1px 0 black,
+        0 1px black,
+        1px 0 black,
+        0 -1px black,
+        0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+/* 안내 문구 공통 */
+.main-text {
+    font-family: 'seolleimcool-SemiBold';
+    color: #fff;
+    text-align: center;
+    line-height: 1.6;
+    font-size: clamp(18px, 2vw, 22px);
+    text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.6);
+    margin-bottom: 18px;
+}
+
+/* Google 인증 링크도 문구 톤 유지 */
+a.main-text {
+    color: #00b7ff;
+    text-decoration: none;
+}
+
+a.main-text:hover {
+    text-decoration: underline;
+}
+
+/* footer 전체 */
+.footer-class {
+    width: 100%;
+    margin-top: auto;
+    padding-top: 24px;
+    padding-bottom: 8px;
+}
+
+/* footer 내부 */
 .footer-container {
-    color: white;
-    font-size: 10px;
-    padding: 5px;
-    margin: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* footer 카피 텍스트 */
+.copy {
+    font-family: 'seolleimcool-SemiBold';
+    font-size: 12px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.75);
+    text-align: center;
 }
