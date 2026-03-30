@@ -224,9 +224,11 @@ const captureButtonEvent = () => {
 // 촬영 버튼 클릭
 document.getElementById('capture').addEventListener('click', captureTimerEvent);
 
-// 키보드 a,b,x,y로 수동 촬영
+
+// 키보드 Enter 수동 촬영
 document.addEventListener('keydown', (event) => {
-    if (!isCaptureTimerActive && ['a', 'b', 'x', 'y'].includes(event.key)) {
+    console.log(event.key)
+    if (!isCaptureTimerActive && ['Enter'].includes(event.key)) {
         captureButtonEvent();
     }
 });
@@ -304,3 +306,4 @@ const sendAllImages = async (images, frame) => {
         });
     }
 };
+
