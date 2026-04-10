@@ -17,7 +17,7 @@
 
 /* 프레임 이미지 */
 .frame img {
-    width: clamp(150px, 20vw, 210px);
+    width: clamp(150px, 5vw, 210px);
     height: auto;
     border-radius: 16px;
     cursor: pointer;
@@ -38,6 +38,7 @@
 #camera-text {
     margin-top: 10px;
     margin-bottom: 18px;
+    font-size: 14px;
 }
 
 /* 카메라 UI 박스 */

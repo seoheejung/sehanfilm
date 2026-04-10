@@ -12,18 +12,42 @@ const h_value_2 = 551;
 const v_value_1 = 759;
 const v_value_2 = 569;
 
+// 동박 프레임 비디오/캔버스 크기
+const d_value_1 = 822;
+const d_value_2 = 654;
+
 // 촬영 상태
 let photoCount = 0;
 let imagesToSend = [];
 let isCaptureTimerActive = false;
 let isCapturing = false;
 
+const FRAME_CAPTURE_COUNT = {
+    film_frame_v: 4,
+    film_frame_h: 4,
+    gosim_frame_v: 4,
+    gosim_frame_h: 4,
+    lovekeykey_frame_v: 4,
+    lovekeykey_frame_h: 4,
+    dongbak_shots: 3,
+};
+
 // 프레임 선택에 맞게 비디오/캔버스 크기 변경
 const updateLayoutForFrameSelection = (frameValue) => {
     const video = document.getElementById('webcam');
     const canvas = document.getElementById('canvas');
 
-    if (frameValue.endsWith('_h')) {
+    if (frameValue === 'dongbak_shots') {
+        shot = 'dongbakShot';
+
+        video.style.objectFit = 'cover';
+
+        video.width = d_value_1;
+        video.height = d_value_2;
+
+        canvas.width = d_value_1;
+        canvas.height = d_value_2;
+    } else if (frameValue.endsWith('_h')) {
         shot = 'horizontalShot';
 
         video.width = h_value_1;
@@ -72,8 +96,8 @@ document.querySelectorAll('.frame-select').forEach((imgElem) => {
 
         updateLayoutForFrameSelection(selectedFrame);
 
-        toggleDisplay(['#frame-text', '#frame-choice1', '#frame-choice2'], 'none');
-        toggleDisplay(['#camera-text', '.camera-ui'], 'block');
+        toggleDisplay(['#frame-text', '#frame-choice', '#frame-choice1', '#frame-choice2'], 'none');
+        toggleDisplay(['.camera-ui'], 'block');
         toggleDisplay(['.reset-frame'], 'flex');
 
         frame = selectedFrame;
@@ -82,24 +106,31 @@ document.querySelectorAll('.frame-select').forEach((imgElem) => {
 });
 
 // 프레임 다시 선택
-document.getElementById('select-frame').addEventListener('click', () => {
-    toggleDisplay(['#frame-text'], 'block');
-    toggleDisplay(['#frame-choice1', '#frame-choice2'], 'flex');
-    toggleDisplay(['#camera-text', '.camera-ui', '.reset-frame'], 'none');
+const selectFrameButton = document.getElementById('select-frame');
 
-    resetCaptureState();
-});
+if (selectFrameButton) {
+    selectFrameButton.addEventListener('click', () => {
+        toggleDisplay(['#frame-text'], 'block');
+        toggleDisplay(['#frame-choice1', '#frame-choice2'], 'flex');
+        toggleDisplay(['.camera-ui', '.reset-frame'], 'none');
+
+        resetCaptureState();
+    });
+}
 
 // 타이머 숫자 UI 설정
 const setupTimer = (timerDiv) => {
     timerDiv.setAttribute('id', 'timer');
     timerDiv.style.position = 'absolute';
-    timerDiv.style.transform = 'translate(-30%, -75%)';
+    timerDiv.style.top = '50%';
+    timerDiv.style.left = '50%';
+    timerDiv.style.transform = 'translate(-50%, -50%)';
     timerDiv.style.fontSize = '4rem';
     timerDiv.style.fontFamily = 'seolleimcool-SemiBold';
     timerDiv.style.color = 'white';
     timerDiv.style.zIndex = '1000';
     timerDiv.style.textShadow = '1px 1px 8px white';
+    timerDiv.style.pointerEvents = 'none';
     return timerDiv;
 };
 
@@ -114,9 +145,11 @@ const takePhotoAndSend = (fxCanvas, imagesToSend) => {
     const videoTexture = fxCanvas.texture(video);
 
     fxCanvas.draw(videoTexture)
-        .hueSaturation(0.05, -0.01)
+        .hueSaturation(0, -0.01)
         .brightnessContrast(-0.02, -0.02)
         .update();
+
+    // fxCanvas.draw(videoTexture).update();
 
     video.style.display = 'none';
     canvas.style.display = 'block';
@@ -124,10 +157,15 @@ const takePhotoAndSend = (fxCanvas, imagesToSend) => {
     const context = canvas.getContext('2d');
     context.save();
 
+    // 좌우 반전
     context.scale(-1, 1);
     context.translate(-canvas.width, 0);
 
-    if (shot === 'horizontalShot' || shot === 'verticalShot') {
+    if (
+        shot === 'horizontalShot' ||
+        shot === 'verticalShot' ||
+        shot === 'dongbakShot'
+    ) {
         context.drawImage(fxCanvas, 0, 0, canvas.width, canvas.height);
     }
 
@@ -155,13 +193,15 @@ const captureTimerEvent = () => {
     const captureButton = document.getElementById('controls');
     captureButton.style.display = 'none';
 
-    document.getElementById('select-frame').style.display = 'none';
+    if (selectFrameButton) {
+        selectFrameButton.style.display = 'none';
+    }
 
     let timerDiv = document.getElementById('timer') || document.createElement('div');
-    const resetFrame = document.getElementById('reset-frame');
+    const cameraUi = document.querySelector('.camera-ui');
 
-    if (!document.getElementById('timer')) {
-        resetFrame.appendChild(setupTimer(timerDiv));
+    if (!document.getElementById('timer') && cameraUi) {
+        cameraUi.appendChild(setupTimer(timerDiv));
     }
 
     photoCount = 0;
@@ -175,11 +215,13 @@ const captureTimerEvent = () => {
         count--;
         timerDiv.textContent = count > 0 ? count : '';
 
-        if (photoCount < 4 && count === 0) {
+        const requiredPhotoCount = FRAME_CAPTURE_COUNT[frame] || 4;
+
+        if (photoCount < requiredPhotoCount && count === 0) {
             takePhotoAndSend(fxCanvas, imagesToSend);
             photoCount++;
             count = 6;
-        } else if (photoCount === 4) {
+        } else if (photoCount === requiredPhotoCount) {
             clearInterval(timerInterval);
             isCaptureTimerActive = false;
             timerDiv.textContent = '';
@@ -195,7 +237,9 @@ const captureButtonEvent = () => {
 
     const captureButton = document.getElementById('controls');
     captureButton.style.display = 'none';
-    document.getElementById('select-frame').style.display = 'none';
+    if (selectFrameButton) {
+        selectFrameButton.style.display = 'none';
+    }
 
     const fxCanvas = fx.canvas();
 
@@ -203,7 +247,9 @@ const captureButtonEvent = () => {
         imagesToSend = [];
     }
 
-    if (photoCount < 4) {
+    const requiredPhotoCount = FRAME_CAPTURE_COUNT[frame] || 4;
+
+    if (photoCount < requiredPhotoCount) {
         takePhotoAndSend(fxCanvas, imagesToSend);
         photoCount++;
         isCapturing = true;
@@ -213,7 +259,7 @@ const captureButtonEvent = () => {
         }, 1000);
     }
 
-    if (photoCount === 4) {
+    if (photoCount === requiredPhotoCount) {
         setTimeout(() => {
             sendAllImages(imagesToSend, frame);
             captureButton.style.display = 'flex';
@@ -223,7 +269,6 @@ const captureButtonEvent = () => {
 
 // 촬영 버튼 클릭
 document.getElementById('capture').addEventListener('click', captureTimerEvent);
-
 
 // 키보드 Enter 수동 촬영
 document.addEventListener('keydown', (event) => {
@@ -259,7 +304,7 @@ const redirectToGoogleAuth = (authUrl) => {
     });
 };
 
-// 4장 모두 서버로 전송
+// 사진 모두 서버로 전송
 const sendAllImages = async (images, frame) => {
     if (frame === '') {
         alert('Frame is not selected.');
@@ -270,6 +315,8 @@ const sendAllImages = async (images, frame) => {
     // 이제 브라우저는 access token을 직접 받지 않음
     // 서버가 저장한 refresh token으로 업로드함
     try {
+        showLoadingOverlay('사진 생성 중...');
+
         const response = await fetch('/mergeImages', {
             method: 'POST',
             headers: {
@@ -292,6 +339,8 @@ const sendAllImages = async (images, frame) => {
         if (data.imageName && data.googleUrl) {
             window.location.href = `/qrcode?imageName=${encodeURIComponent(data.imageName)}&googleUrl=${encodeURIComponent(data.googleUrl)}`;
         }
+
+        hideLoadingOverlay();
     } catch (error) {
         // 아직 1회 인증이 안 된 경우
         if (error.status === 401 && error.data?.authUrl) {
@@ -307,3 +356,33 @@ const sendAllImages = async (images, frame) => {
     }
 };
 
+const showLoadingOverlay = (message = '사진 생성 중...') => {
+    const overlay = document.getElementById('loadingOverlay');
+    const text = overlay?.querySelector('.loading-text');
+    const cameraUi = document.querySelector('.camera-ui');
+    const frameChoice = document.getElementById('frame-choice');
+
+    if (text) {
+        text.textContent = message;
+    }
+
+    if (cameraUi) {
+        cameraUi.style.display = 'none';
+    }
+
+    if (frameChoice) {
+        frameChoice.style.display = 'none';
+    }
+
+    if (overlay) {
+        overlay.style.display = 'flex';
+    }
+};
+
+const hideLoadingOverlay = () => {
+    const overlay = document.getElementById('loadingOverlay');
+
+    if (overlay) {
+        overlay.style.display = 'none';
+    }
+};

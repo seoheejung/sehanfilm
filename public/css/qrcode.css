@@ -1,36 +1,109 @@
-/* QR 페이지 이미지 영역 */
-.image-container {
-    width: 100%;
+.result-container {
     display: flex;
-    justify-content: center;
-    margin-top: 6px;
-    margin-bottom: 18px;
+    flex-direction: row;
+    gap: 10px;
+    padding: 24px 16px 40px;
 }
 
-/* 합성 결과 미리보기 이미지 */
-.photo {
-    width: min(92vw, 320px);
-    height: auto;
-    border-radius: 18px;
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
-}
-
-/* QR 출력 영역 */
-.qr-code {
+.result-card {
     width: 100%;
+    max-width: 420px;
+    border-radius: 18px;
+    padding: 20px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.result-desc {
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0 0 18px;
+}
+
+.preview-image-wrap {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 8px;
-    margin-bottom: 18px;
 }
 
-/* QR 이미지 */
-.qr-code img {
-    width: min(70vw, 220px);
+.photo {
+    max-width: 80%;
     height: auto;
-    background: #fff;
-    padding: 10px;
     border-radius: 14px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    display: block;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+}
+
+.qr-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.qr-code {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 180px;
+    min-height: 180px;
+    padding: 14px;
+    border-radius: 14px;
+    background: #ffffff;
+    margin-bottom: 18px;
+    box-sizing: border-box;
+}
+
+.back-link {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 120px;
+    height: 44px;
+    padding: 0 18px;
+    border-radius: 999px;
+    background: #0a845b;
+    color: #111111;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.back-link:hover {
+    transform: translateY(-1px);
+    opacity: 0.92;
+}
+
+.back-link:active {
+    transform: translateY(0);
+}
+
+@media (max-width: 640px) {
+    .result-container {
+        gap: 16px;
+        padding: 18px 12px 28px;
+    }
+
+    .result-card {
+        padding: 16px;
+        border-radius: 14px;
+    }
+
+    .result-desc {
+        font-size: 13px;
+        margin-bottom: 16px;
+    }
+
+    .qr-code {
+        min-width: 160px;
+        min-height: 160px;
+        padding: 12px;
+    }
+
+    .back-link {
+        min-width: 110px;
+        height: 40px;
+        font-size: 14px;
+    }
 }

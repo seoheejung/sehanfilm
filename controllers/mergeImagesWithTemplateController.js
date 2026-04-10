@@ -13,18 +13,38 @@ const FRAME_TYPES = new Set([
     'gosim_frame_h',
     'lovekeykey_frame_v',
     'lovekeykey_frame_h',
+    'dongbak_shots',
+]);
+
+// 프레임별 필요 촬영 장수
+const FRAME_IMAGE_COUNT = {
+    film_frame_v: 4,
+    film_frame_h: 4,
+    gosim_frame_v: 4,
+    gosim_frame_h: 4,
+    lovekeykey_frame_v: 4,
+    lovekeykey_frame_h: 4,
+    dongbak_shots: 3,
+};
+
+// overlay를 실제로 사용하는 프레임만 추가 합성
+const FRAMES_WITHOUT_OVERLAY = new Set([
+    'film_frame_h',
+    'film_frame_v',
 ]);
 
 // 요청 유효성 검사
 const ensureValidRequest = (imagesData, frameData) => {
-    if (!Array.isArray(imagesData) || imagesData.length !== 4) {
-        const error = new Error('이미지는 4장이어야 합니다.');
+    if (!FRAME_TYPES.has(frameData)) {
+        const error = new Error('지원하지 않는 프레임입니다.');
         error.status = 400;
         throw error;
     }
 
-    if (!FRAME_TYPES.has(frameData)) {
-        const error = new Error('지원하지 않는 프레임입니다.');
+    const requiredImageCount = FRAME_IMAGE_COUNT[frameData];
+
+    if (!Array.isArray(imagesData) || imagesData.length !== requiredImageCount) {
+        const error = new Error(`이미지는 ${requiredImageCount}장이어야 합니다.`);
         error.status = 400;
         throw error;
     }
@@ -56,28 +76,56 @@ const mergeImagesWithTemplateController = async (req, res, next) => {
         // 이제 accessToken은 브라우저에서 받지 않음
         ensureValidRequest(imagesData, frameData);
 
-        const imageName = `sehanFilm_${moment().format('YYMMDD_HHmmss')}_${randomUUID()}.png`;
+        const imageName = `sehanDongbak_${moment().format('YYMMDD_HHmmss')}_${randomUUID()}.png`;
 
-        const templatePath = `./public/image/${frameData}/frame.jpg`;
+        const templatePath =
+            frameData === 'dongbak_shots'
+                ? `./public/image/${frameData}/frame_small.png`
+                : `./public/image/${frameData}/frame.jpg`;
+
         const template = sharp(templatePath);
-
         const shotPositions = shots[frameData];
 
-        const imageOverlays = imagesData.map((data, index) => ({
-            input: decodeImage(data),
-            left: shotPositions[index].left,
-            top: shotPositions[index].top
-        }));
+        if (!Array.isArray(shotPositions) || shotPositions.length !== FRAME_IMAGE_COUNT[frameData]) {
+            const error = new Error('프레임 좌표 설정이 올바르지 않습니다.');
+            error.status = 500;
+            throw error;
+        }
+
+        const imageOverlays = await Promise.all(
+            imagesData.map(async (data, index) => {
+                const resizedBuffer = frameData === 'dongbak_shots'
+                    ? await sharp(decodeImage(data))
+                        .resize(822, 654)
+                        .png()
+                        .toBuffer()
+                    : decodeImage(data);
+
+                return {
+                    input: resizedBuffer,
+                    left: shotPositions[index].left,
+                    top: shotPositions[index].top
+                };
+            })
+        );
 
         // 1차 합성
         const mergedImageBuffer = await template.composite(imageOverlays).toBuffer();
 
         let finalImageBuffer = mergedImageBuffer;
 
-        // 필름 프레임이 아니면 overlay.png 한 번 더 덮기
-        if (frameData !== 'film_frame_h' && frameData !== 'film_frame_v') {
-            const overlayImage = `./public/image/${frameData}/overlay.png`;
+        if (!FRAMES_WITHOUT_OVERLAY.has(frameData)) {
+            const overlayImage =
+                frameData === 'dongbak_shots'
+                    ? `./public/image/${frameData}/overlay_small.png`
+                    : `./public/image/${frameData}/overlay.png`;
+
             const layerPosition = overlay[frameData];
+            if (!layerPosition || typeof layerPosition.left !== 'number' || typeof layerPosition.top !== 'number') {
+                const error = new Error('오버레이 좌표 설정이 올바르지 않습니다.');
+                error.status = 500;
+                throw error;
+            }
 
             finalImageBuffer = await sharp(mergedImageBuffer)
                 .composite([
@@ -98,7 +146,8 @@ const mergeImagesWithTemplateController = async (req, res, next) => {
         const driveFile = await uploadImageBuffer({
             buffer: finalImageBuffer,
             fileName: imageName,
-            mimeType: 'image/png'
+            mimeType: 'image/png',
+            app: req.app,
         });
 
         console.log(`[ ${moment().format('YYYY-MM-DD HH:mm:ss')} ] ${imageName} merged and uploaded complete`);

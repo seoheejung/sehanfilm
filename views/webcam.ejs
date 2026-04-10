@@ -1,7 +1,7 @@
 <%- include('partials/header.ejs'); %>
 <body>
     <div class="parent-container">
-        <a href='/' class="logo-text">sehanFilm</a>
+        <a href='/' class="logo-text">2026 동아리 박람회</a>
 
         <!-- 서버 1회 인증 상태 표시 -->
         <div style="margin-bottom: 16px; text-align: center;">
@@ -18,81 +18,65 @@
             <% } %>
         </div>
 
-        <!-- 프레임 선택 안내 -->
-        <span class="main-text" id="frame-text">프레임을 선택해주세요.</span>
+        <div class="frame-choice" id="frame-choice">
+            <div class="guide-container">
 
-        <!-- 가로 프레임 -->
-        <div class="frame-choice" id="frame-choice1">
-            <div class="frame">
-                <img
-                    src="/image/c_film_frame_h.jpg"
-                    alt="c_film_frame_h"
-                    width="100"
-                    class="frame-select"
-                    data-value="film_frame_h"
-                >
+                <!-- 메인 설명 카드 -->
+                <div class="guide-card">
+                    <div class="guide-title">
+                        동박 프레임 블렌딩
+                    </div>
+
+                    <div class="guide-desc">
+                        브랜딩 팀에서 제작한 동박 프레임으로<br>
+                        우리들의 케미를 <span class="highlight">'블렌딩'</span> 해보세요.
+                    </div>
+
+                    <div class="guide-steps">
+                        <div class="step">
+                            <div class="step-index">1</div>
+                            <div class="step-text">
+                                <strong>Blend</strong><br>
+                                친구들과 케미샷 촬영
+                            </div>
+                        </div>
+
+                        <div class="step">
+                            <div class="step-index">2</div>
+                            <div class="step-text">
+                                <strong>Share</strong><br>
+                                인스타 스토리 업로드
+                            </div>
+                        </div>
+
+                        <div class="step">
+                            <div class="step-index">3</div>
+                            <div class="step-text">
+                                <strong>Tag</strong><br>
+                                @sehan.youth 태그
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 카메라 안내 -->
+                <div class="camera-guide">
+                    촬영 버튼을 누르면 타이머 후 자동 촬영됩니다.<br>
+                    리모컨은 <span class="highlight">A 버튼</span>을 눌러 촬영하세요.
+                </div>
             </div>
 
+            <!-- 프레임 -->
             <div class="frame">
                 <img
-                    src="/image/c_lovekeykey_frame_h.jpg"
-                    alt="c_lovekeykey_frame_h"
-                    width="100"
+                    src="/image/dongbak_shots/sample_small.png"
+                    alt="sample_small"
+                    width="60"
                     class="frame-select"
-                    data-value="lovekeykey_frame_h"
-                >
-            </div>
-
-            <div class="frame">
-                <img
-                    src="/image/c_gosim_frame_h.jpg"
-                    alt="c_gosim_frame_h"
-                    width="100"
-                    class="frame-select"
-                    data-value="gosim_frame_h"
-                >
-            </div>
-        </div>
-
-        <!-- 세로 프레임 -->
-        <div class="frame-choice" id="frame-choice2">
-            <div class="frame">
-                <img
-                    src="/image/c_film_frame_v.jpg"
-                    alt="c_film_frame_v"
-                    width="100"
-                    class="frame-select"
-                    data-value="film_frame_v"
-                >
-            </div>
-
-            <div class="frame">
-                <img
-                    src="/image/c_lovekeykey_frame_v.jpg"
-                    alt="c_lovekeykey_frame_v"
-                    width="100"
-                    class="frame-select"
-                    data-value="lovekeykey_frame_v"
-                >
-            </div>
-
-            <div class="frame">
-                <img
-                    src="/image/c_gosim_frame_v.jpg"
-                    alt="c_gosim_frame_v"
-                    width="100"
-                    class="frame-select"
-                    data-value="gosim_frame_v"
+                    data-value="dongbak_shots"
                 >
             </div>
         </div>
-
-        <!-- 카메라 안내 -->
-        <span class="main-text" id="camera-text" style="display: none;">
-            촬영 버튼을 클릭하면 타이머로 자동 촬영되며,
-            <br>
-            리모컨은 "A" 버튼을 눌러 촬영하면 됩니다.
-        </span>
 
         <!-- 카메라 UI -->
         <div class="camera-ui" style="display: none;">
@@ -103,13 +87,13 @@
                 <button id="capture">촬영</button>
             </div>
         </div>
-
-        <!-- 프레임 재선택 -->
-        <div class="reset-frame" id="reset-frame" style="display: none;">
-            <button id="select-frame">프레임 다시 선택하기</button>
+    </div>
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    
+        <div class="loading-box">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">사진 생성 중...</div>
         </div>
-
-        <%- include('partials/footer.ejs'); %>
     </div>
 
     <script src="/js/webcam.js"></script>

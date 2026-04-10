@@ -1,5 +1,5 @@
 
-/* _v : 세로, _h : 가로 */
+/* _v : 세로, _h : 가로, sample : 3장 */
 const shots = {
     verticalShot: [
         { left: 56, top: 85 },
@@ -48,6 +48,11 @@ const shots = {
         { left: 836, top: 61 },
         { left: 51, top: 669 },
         { left: 836, top: 669 },
+    ], 
+    dongbak_shots: [
+        { left: 79, top: 152 },
+        { left: 79, top: 820 },
+        { left: 79, top: 1491 },
     ]
 };
 
@@ -60,6 +65,8 @@ const overlay = {
         { left: 8, top: 24 },
     lovekeykey_frame_h: 
         { left: 25, top: 11 },
+    dongbak_shots : 
+        { left: 0, top: 0 },
 }
 
 const lovekeykeyArt = [

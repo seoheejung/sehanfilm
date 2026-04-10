@@ -3,6 +3,7 @@ import routes from './routes/index.js';
 import path from 'path';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
+import { validateSavedRefreshToken } from './services/googleOAuthService.js';
 
 dotenv.config();
 
@@ -46,6 +47,16 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 // 서버 시작
-app.listen(process.env.HTTPPORT, () => {
-    console.log(`Server started on port ${process.env.HTTPPORT} : http://localhost:${process.env.HTTPPORT}`);
+app.listen(process.env.HTTPPORT, async () => {
+    try {
+        const validation = await validateSavedRefreshToken();
+
+        app.locals.isGoogleDriveAuthorized = validation.valid;
+
+        console.log(`Server started on port ${process.env.HTTPPORT} : http://localhost:${process.env.HTTPPORT}`);
+        console.log('Google Drive auth validation:', validation);
+    } catch (err) {
+        app.locals.isGoogleDriveAuthorized = false;
+        console.error('Google Drive token validation failed:', err);
+    }
 });
