@@ -37,36 +37,44 @@ const updateLayoutForFrameSelection = (frameValue) => {
     const video = document.getElementById('webcam');
     const canvas = document.getElementById('canvas');
 
+    // 공통: 미리보기 박스는 CSS style로 제어
+    video.style.objectFit = 'cover';
+
     if (frameValue === 'dongbak_shots') {
         shot = 'dongbakShot';
 
-        video.style.objectFit = 'cover';
-
-        video.width = d_value_1;
-        video.height = d_value_2;
-
         canvas.width = d_value_1;
         canvas.height = d_value_2;
+
+        video.style.width = `${d_value_1}px`;
+        video.style.height = `${d_value_2}px`;
+
+        canvas.style.width = `${d_value_1}px`;
+        canvas.style.height = `${d_value_2}px`;
     } else if (frameValue.endsWith('_h')) {
         shot = 'horizontalShot';
-
-        video.width = h_value_1;
-        video.height = h_value_2;
 
         canvas.width = h_value_1;
         canvas.height = h_value_2;
 
-        video.style.objectFit = 'fill';
+        video.style.width = `${h_value_1}px`;
+        video.style.height = `${h_value_2}px`;
+
+        canvas.style.width = `${h_value_1}px`;
+        canvas.style.height = `${h_value_2}px`;
+
+        video.style.objectFit = 'cover';
     } else if (frameValue.endsWith('_v')) {
         shot = 'verticalShot';
 
-        video.style.objectFit = 'cover';
-
-        video.width = v_value_2;
-        video.height = v_value_1;
-
         canvas.width = v_value_2;
         canvas.height = v_value_1;
+
+        video.style.width = `${v_value_2}px`;
+        video.style.height = `${v_value_1}px`;
+
+        canvas.style.width = `${v_value_2}px`;
+        canvas.style.height = `${v_value_1}px`;
     }
 };
 
@@ -134,27 +142,52 @@ const setupTimer = (timerDiv) => {
     return timerDiv;
 };
 
-// 실제 1장 촬영
-const takePhotoAndSend = (fxCanvas, imagesToSend) => {
-    const video = document.getElementById('webcam');
-    video.style.transform = 'scaleX(-1)';
+// 중앙 크롭용
+const drawImageCoverFromVideo = (context, video, targetWidth, targetHeight) => {
+    const sourceWidth = video.videoWidth;
+    const sourceHeight = video.videoHeight;
 
+    const sourceRatio = sourceWidth / sourceHeight;
+    const targetRatio = targetWidth / targetHeight;
+
+    let sx = 0;
+    let sy = 0;
+    let sWidth = sourceWidth;
+    let sHeight = sourceHeight;
+
+    if (sourceRatio > targetRatio) {
+        sWidth = sourceHeight * targetRatio;
+        sx = (sourceWidth - sWidth) / 2;
+    } else if (sourceRatio < targetRatio) {
+        sHeight = sourceWidth / targetRatio;
+        sy = (sourceHeight - sHeight) / 2;
+    }
+
+    context.drawImage(
+        video,
+        sx, sy, sWidth, sHeight,
+        0, 0, targetWidth, targetHeight
+    );
+};
+
+// 실제 1장 촬영
+const takePhotoAndSend = (imagesToSend) => {
+    const video = document.getElementById('webcam');
     const canvas = document.getElementById('canvas');
     const shutterSound = document.getElementById('shutterSound');
-
-    const videoTexture = fxCanvas.texture(video);
-
-    fxCanvas.draw(videoTexture)
-        .hueSaturation(0, -0.01)
-        .brightnessContrast(-0.02, -0.02)
-        .update();
-
-    // fxCanvas.draw(videoTexture).update();
-
-    video.style.display = 'none';
-    canvas.style.display = 'block';
-
     const context = canvas.getContext('2d');
+
+
+    if (!video.videoWidth || !video.videoHeight) {
+        console.error('video metadata not ready');
+        return;
+    }
+
+    canvas.style.display = 'block';
+    video.style.display = 'none';
+
+    // 이전 프레임 잔상 제거
+    context.clearRect(0, 0, canvas.width, canvas.height);
     context.save();
 
     // 좌우 반전
@@ -166,7 +199,7 @@ const takePhotoAndSend = (fxCanvas, imagesToSend) => {
         shot === 'verticalShot' ||
         shot === 'dongbakShot'
     ) {
-        context.drawImage(fxCanvas, 0, 0, canvas.width, canvas.height);
+        drawImageCoverFromVideo(context, video, canvas.width, canvas.height);
     }
 
     context.restore();
@@ -208,7 +241,6 @@ const captureTimerEvent = () => {
     imagesToSend = [];
     let count = 5;
 
-    const fxCanvas = fx.canvas();
     timerDiv.textContent = count;
 
     const timerInterval = setInterval(() => {
@@ -218,7 +250,7 @@ const captureTimerEvent = () => {
         const requiredPhotoCount = FRAME_CAPTURE_COUNT[frame] || 4;
 
         if (photoCount < requiredPhotoCount && count === 0) {
-            takePhotoAndSend(fxCanvas, imagesToSend);
+            takePhotoAndSend(imagesToSend);
             photoCount++;
             count = 6;
         } else if (photoCount === requiredPhotoCount) {
@@ -241,8 +273,6 @@ const captureButtonEvent = () => {
         selectFrameButton.style.display = 'none';
     }
 
-    const fxCanvas = fx.canvas();
-
     if (photoCount === 0) {
         imagesToSend = [];
     }
@@ -250,7 +280,7 @@ const captureButtonEvent = () => {
     const requiredPhotoCount = FRAME_CAPTURE_COUNT[frame] || 4;
 
     if (photoCount < requiredPhotoCount) {
-        takePhotoAndSend(fxCanvas, imagesToSend);
+        takePhotoAndSend(imagesToSend);
         photoCount++;
         isCapturing = true;
 
