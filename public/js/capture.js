@@ -1,16 +1,12 @@
+// =========================
+// 프레임/촬영 설정
+// =========================
+
 // 현재 선택된 프레임 값
 let frame = '';
 
 // 현재 촬영 방향 상태
 let shot = '';
-
-// 가로 프레임 비디오/캔버스 크기
-const h_value_1 = 735;
-const h_value_2 = 551;
-
-// 세로 프레임 비디오/캔버스 크기
-const v_value_1 = 759;
-const v_value_2 = 569;
 
 // 촬영 상태
 let photoCount = 0;
@@ -18,43 +14,155 @@ let imagesToSend = [];
 let isCaptureTimerActive = false;
 let isCapturing = false;
 
+// 재업로드용 이미지 이름 저장
+let retryImageName = '';
+
+// 업로드 중복 요청 방지 플래그
+let isUploading = false;
+
+// 프레임별 비디오/캔버스 크기
+const FRAME_SIZE = {
+    horizontal: {
+        width: 735,
+        height: 551
+    },
+    vertical: {
+        width: 569,
+        height: 759
+    },
+    dongbak: {
+        width: 822,
+        height: 654
+    }
+};
+
+// 프레임별 필요 촬영 장수
+const FRAME_CAPTURE_COUNT = {
+    film_frame_v: 4,
+    film_frame_h: 4,
+    gosim_frame_v: 4,
+    gosim_frame_h: 4,
+    lovekeykey_frame_v: 4,
+    lovekeykey_frame_h: 4,
+    dongbak_shots: 3
+};
+
+// =========================
+// DOM 유틸
+// =========================
+
+const getElements = () => ({
+    video: document.getElementById('webcam'),
+    canvas: document.getElementById('canvas'),
+    captureButton: document.getElementById('controls'),
+    captureTrigger: document.getElementById('capture'),
+    selectFrameButton: document.getElementById('select-frame'),
+    cameraUi: document.querySelector('.camera-ui'),
+    resetFrame: document.querySelector('.reset-frame'),
+    frameText: document.getElementById('frame-text'),
+    frameChoice: document.getElementById('frame-choice'),
+    frameChoice1: document.getElementById('frame-choice1'),
+    frameChoice2: document.getElementById('frame-choice2'),
+    loadingOverlay: document.getElementById('loadingOverlay'),
+    shutterSound: document.getElementById('shutterSound')
+});
+
+// 공통 display 제어
+const toggleDisplay = (selectors, displayStyle) => {
+    selectors.forEach((selector) => {
+        const element = document.querySelector(selector);
+
+        if (element) {
+            element.style.display = displayStyle;
+        }
+    });
+};
+
+// 촬영 UI 숨김
+const hideCaptureUi = () => {
+    const { captureButton, selectFrameButton } = getElements();
+
+    if (captureButton) {
+        captureButton.style.display = 'none';
+    }
+
+    if (selectFrameButton) {
+        selectFrameButton.style.display = 'none';
+    }
+};
+
+// 촬영 UI 복구
+const restoreCaptureUi = () => {
+    const { captureButton, selectFrameButton, cameraUi } = getElements();
+
+    if (cameraUi) {
+        cameraUi.style.display = 'block';
+    }
+
+    if (captureButton) {
+        captureButton.style.display = 'flex';
+    }
+
+    if (selectFrameButton) {
+        selectFrameButton.style.display = 'flex';
+    }
+};
+
+// =========================
+// 프레임/레이아웃 처리
+// =========================
+
 // 프레임 선택에 맞게 비디오/캔버스 크기 변경
 const updateLayoutForFrameSelection = (frameValue) => {
-    const video = document.getElementById('webcam');
-    const canvas = document.getElementById('canvas');
+    const { video, canvas } = getElements();
+
+    if (!video || !canvas) {
+        return;
+    }
+
+    // 공통: 미리보기 박스는 CSS style로 제어
+    video.style.objectFit = 'cover';
+
+    if (frameValue === 'dongbak_shots') {
+        shot = 'dongbakShot';
+
+        canvas.width = FRAME_SIZE.dongbak.width;
+        canvas.height = FRAME_SIZE.dongbak.height;
+
+        video.style.width = `${FRAME_SIZE.dongbak.width}px`;
+        video.style.height = `${FRAME_SIZE.dongbak.height}px`;
+
+        canvas.style.width = `${FRAME_SIZE.dongbak.width}px`;
+        canvas.style.height = `${FRAME_SIZE.dongbak.height}px`;
+        return;
+    }
 
     if (frameValue.endsWith('_h')) {
         shot = 'horizontalShot';
 
-        video.width = h_value_1;
-        video.height = h_value_2;
+        canvas.width = FRAME_SIZE.horizontal.width;
+        canvas.height = FRAME_SIZE.horizontal.height;
 
-        canvas.width = h_value_1;
-        canvas.height = h_value_2;
+        video.style.width = `${FRAME_SIZE.horizontal.width}px`;
+        video.style.height = `${FRAME_SIZE.horizontal.height}px`;
 
-        video.style.objectFit = 'fill';
-    } else if (frameValue.endsWith('_v')) {
+        canvas.style.width = `${FRAME_SIZE.horizontal.width}px`;
+        canvas.style.height = `${FRAME_SIZE.horizontal.height}px`;
+        return;
+    }
+
+    if (frameValue.endsWith('_v')) {
         shot = 'verticalShot';
 
-        video.style.objectFit = 'cover';
+        canvas.width = FRAME_SIZE.vertical.width;
+        canvas.height = FRAME_SIZE.vertical.height;
 
-        video.width = v_value_2;
-        video.height = v_value_1;
+        video.style.width = `${FRAME_SIZE.vertical.width}px`;
+        video.style.height = `${FRAME_SIZE.vertical.height}px`;
 
-        canvas.width = v_value_2;
-        canvas.height = v_value_1;
+        canvas.style.width = `${FRAME_SIZE.vertical.width}px`;
+        canvas.style.height = `${FRAME_SIZE.vertical.height}px`;
     }
-};
-
-// 공통 display 제어
-const toggleDisplay = (elements, displayStyle) => {
-    elements.forEach((element) => {
-        const domElement = document.querySelector(element);
-
-        if (domElement) {
-            domElement.style.display = displayStyle;
-        }
-    });
 };
 
 // 촬영 상태 초기화
@@ -65,70 +173,116 @@ const resetCaptureState = () => {
     isCapturing = false;
 };
 
-// 프레임 선택 클릭
-document.querySelectorAll('.frame-select').forEach((imgElem) => {
-    imgElem.addEventListener('click', function(event) {
-        const selectedFrame = event.target.getAttribute('data-value');
+// 프레임 선택 적용
+const applySelectedFrame = (selectedFrame) => {
+    updateLayoutForFrameSelection(selectedFrame);
 
-        updateLayoutForFrameSelection(selectedFrame);
+    toggleDisplay(['#frame-text', '#frame-choice', '#frame-choice1', '#frame-choice2'], 'none');
+    toggleDisplay(['.camera-ui'], 'block');
+    toggleDisplay(['.reset-frame'], 'flex');
 
-        toggleDisplay(['#frame-text', '#frame-choice1', '#frame-choice2'], 'none');
-        toggleDisplay(['#camera-text', '.camera-ui'], 'block');
-        toggleDisplay(['.reset-frame'], 'flex');
+    frame = selectedFrame;
+    resetCaptureState();
+};
 
-        frame = selectedFrame;
-        resetCaptureState();
-    });
-});
-
-// 프레임 다시 선택
-document.getElementById('select-frame').addEventListener('click', () => {
+// 프레임 선택 화면으로 복귀
+const resetFrameSelection = () => {
     toggleDisplay(['#frame-text'], 'block');
     toggleDisplay(['#frame-choice1', '#frame-choice2'], 'flex');
-    toggleDisplay(['#camera-text', '.camera-ui', '.reset-frame'], 'none');
+    toggleDisplay(['.camera-ui', '.reset-frame'], 'none');
 
+    frame = '';
+    shot = '';
     resetCaptureState();
-});
+};
+
+// =========================
+// 타이머/촬영 처리
+// =========================
 
 // 타이머 숫자 UI 설정
 const setupTimer = (timerDiv) => {
     timerDiv.setAttribute('id', 'timer');
     timerDiv.style.position = 'absolute';
-    timerDiv.style.transform = 'translate(-30%, -75%)';
+    timerDiv.style.top = '50%';
+    timerDiv.style.left = '50%';
+    timerDiv.style.transform = 'translate(-50%, -50%)';
     timerDiv.style.fontSize = '4rem';
     timerDiv.style.fontFamily = 'seolleimcool-SemiBold';
     timerDiv.style.color = 'white';
     timerDiv.style.zIndex = '1000';
     timerDiv.style.textShadow = '1px 1px 8px white';
+    timerDiv.style.pointerEvents = 'none';
+
     return timerDiv;
 };
 
+// 중앙 크롭용
+const drawImageCoverFromVideo = (context, video, targetWidth, targetHeight) => {
+    const sourceWidth = video.videoWidth;
+    const sourceHeight = video.videoHeight;
+
+    const sourceRatio = sourceWidth / sourceHeight;
+    const targetRatio = targetWidth / targetHeight;
+
+    let sx = 0;
+    let sy = 0;
+    let sWidth = sourceWidth;
+    let sHeight = sourceHeight;
+
+    if (sourceRatio > targetRatio) {
+        sWidth = sourceHeight * targetRatio;
+        sx = (sourceWidth - sWidth) / 2;
+    } else if (sourceRatio < targetRatio) {
+        sHeight = sourceWidth / targetRatio;
+        sy = (sourceHeight - sHeight) / 2;
+    }
+
+    context.drawImage(
+        video,
+        sx,
+        sy,
+        sWidth,
+        sHeight,
+        0,
+        0,
+        targetWidth,
+        targetHeight
+    );
+};
+
 // 실제 1장 촬영
-const takePhotoAndSend = (fxCanvas, imagesToSend) => {
-    const video = document.getElementById('webcam');
-    video.style.transform = 'scaleX(-1)';
+const captureSinglePhoto = () => {
+    const { video, canvas, shutterSound } = getElements();
 
-    const canvas = document.getElementById('canvas');
-    const shutterSound = document.getElementById('shutterSound');
-
-    const videoTexture = fxCanvas.texture(video);
-
-    fxCanvas.draw(videoTexture)
-        .hueSaturation(0.05, -0.01)
-        .brightnessContrast(-0.02, -0.02)
-        .update();
-
-    video.style.display = 'none';
-    canvas.style.display = 'block';
+    if (!video || !canvas || !shutterSound) {
+        return false;
+    }
 
     const context = canvas.getContext('2d');
+
+    if (!video.videoWidth || !video.videoHeight) {
+        console.error('video metadata not ready');
+        return false;
+    }
+
+    canvas.style.display = 'block';
+    video.style.display = 'none';
+
+    // 이전 프레임 잔상 제거
+    context.clearRect(0, 0, canvas.width, canvas.height);
     context.save();
 
+    // 좌우 반전
     context.scale(-1, 1);
     context.translate(-canvas.width, 0);
 
-    if (shot === 'horizontalShot' || shot === 'verticalShot') {
-        context.drawImage(fxCanvas, 0, 0, canvas.width, canvas.height);
+    if (
+        shot === 'horizontalShot' ||
+        shot === 'verticalShot' ||
+        shot === 'dongbakShot'
+    ) {
+        drawImageCoverFromVideo(context, video, canvas.width, canvas.height);
     }
 
     context.restore();
@@ -142,6 +296,23 @@ const takePhotoAndSend = (fxCanvas, imagesToSend) => {
         canvas.style.display = 'none';
         video.style.display = 'block';
     }, 1000);
+
+    return true;
+};
+
+// 현재 프레임에 필요한 촬영 수 반환
+const getRequiredPhotoCount = () => {
+    return FRAME_CAPTURE_COUNT[frame] || 4;
+};
+
+// 촬영 완료 후 서버 전송
+const submitCapturedImages = () => {
+    uploadImages({
+        isMerge: true,
+        images: imagesToSend,
+        frame,
+        loadingMessage: '사진 생성 중...'
+    });
 };
 
 // 타이머 촬영
@@ -151,60 +322,69 @@ const captureTimerEvent = () => {
     }
 
     isCaptureTimerActive = true;
-
-    const captureButton = document.getElementById('controls');
-    captureButton.style.display = 'none';
-
-    document.getElementById('select-frame').style.display = 'none';
+    hideCaptureUi();
 
     let timerDiv = document.getElementById('timer') || document.createElement('div');
-    const resetFrame = document.getElementById('reset-frame');
+    const { cameraUi } = getElements();
 
-    if (!document.getElementById('timer')) {
-        resetFrame.appendChild(setupTimer(timerDiv));
+    if (!document.getElementById('timer') && cameraUi) {
+        cameraUi.appendChild(setupTimer(timerDiv));
     }
 
     photoCount = 0;
     imagesToSend = [];
     let count = 5;
 
-    const fxCanvas = fx.canvas();
     timerDiv.textContent = count;
 
     const timerInterval = setInterval(() => {
         count--;
         timerDiv.textContent = count > 0 ? count : '';
 
-        if (photoCount < 4 && count === 0) {
-            takePhotoAndSend(fxCanvas, imagesToSend);
-            photoCount++;
+        const requiredPhotoCount = getRequiredPhotoCount();
+
+        if (photoCount < requiredPhotoCount && count === 0) {
+            const captured = captureSinglePhoto();
+
+            if (captured) {
+                photoCount++;
+            }
+
             count = 6;
-        } else if (photoCount === 4) {
+            return;
+        }
+
+        if (photoCount === requiredPhotoCount) {
             clearInterval(timerInterval);
             isCaptureTimerActive = false;
             timerDiv.textContent = '';
-            sendAllImages(imagesToSend, frame);
-            captureButton.style.display = 'flex';
+            submitCapturedImages();
         }
     }, 1000);
 };
 
 // 수동 촬영
 const captureButtonEvent = () => {
-    if (isCapturing) return;
+    if (isCapturing) {
+        return;
+    }
 
-    const captureButton = document.getElementById('controls');
-    captureButton.style.display = 'none';
-    document.getElementById('select-frame').style.display = 'none';
-
-    const fxCanvas = fx.canvas();
+    hideCaptureUi();
 
     if (photoCount === 0) {
         imagesToSend = [];
     }
 
-    if (photoCount < 4) {
-        takePhotoAndSend(fxCanvas, imagesToSend);
+    const requiredPhotoCount = getRequiredPhotoCount();
+
+    if (photoCount < requiredPhotoCount) {
+        const captured = captureSinglePhoto();
+
+        if (!captured) {
+            restoreCaptureUi();
+            return;
+        }
+
         photoCount++;
         isCapturing = true;
 
@@ -213,25 +393,16 @@ const captureButtonEvent = () => {
         }, 1000);
     }
 
-    if (photoCount === 4) {
+    if (photoCount === requiredPhotoCount) {
         setTimeout(() => {
-            sendAllImages(imagesToSend, frame);
-            captureButton.style.display = 'flex';
+            submitCapturedImages();
         }, 1000);
     }
 };
 
-// 촬영 버튼 클릭
-document.getElementById('capture').addEventListener('click', captureTimerEvent);
-
-
-// 키보드 Enter 수동 촬영
-document.addEventListener('keydown', (event) => {
-    console.log(event.key)
-    if (!isCaptureTimerActive && ['Enter'].includes(event.key)) {
-        captureButtonEvent();
-    }
-});
+// =========================
+// 업로드/UI 처리
+// =========================
 
 // 중앙 토스트
 const ToastCheck = Swal.mixin({
@@ -259,51 +430,210 @@ const redirectToGoogleAuth = (authUrl) => {
     });
 };
 
-// 4장 모두 서버로 전송
-const sendAllImages = async (images, frame) => {
-    if (frame === '') {
+// mergeImages 공통 요청
+const requestMergeImages = async (payload) => {
+    const response = await fetch('/mergeImages', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    });
+
+    let data = {};
+
+    try {
+        data = await response.json();
+    } catch {
+        data = {};
+    }
+
+    if (!response.ok) {
+        throw {
+            status: response.status,
+            data
+        };
+    }
+
+    return data;
+};
+
+// 성공 시 QR 페이지 이동
+const redirectToQrPage = (data) => {
+    if (data.imageName && data.googleUrl) {
+        window.location.href = `/qrcode?imageName=${encodeURIComponent(data.imageName)}&googleUrl=${encodeURIComponent(data.googleUrl)}`;
+        return true;
+    }
+
+    return false;
+};
+
+// 업로드 실패 팝업 공통 처리
+const showUploadErrorModal = ({ error, images, frame }) => {
+    // 합성까지 성공한 경우 재업로드용 imageName 저장
+    if (error.data?.previewSaved && error.data?.imageName) {
+        retryImageName = error.data.imageName;
+    }
+
+    // 업로드 실패 상황별 메시지 분기
+    const errorMessage = error.data?.previewSaved
+        ? '이미지 합성은 완료됐지만 Google Drive 업로드에 실패했습니다. 재시도해주세요.'
+        : (error.data?.message || '이미지 처리 중 오류 발생');
+
+    Swal.fire({
+        icon: 'error',
+        title: '업로드 실패',
+        text: errorMessage,
+        showCancelButton: true,
+        confirmButtonText: '재시도',
+        cancelButtonText: '취소'
+    }).then((result) => {
+        if (!result.isConfirmed) {
+            return;
+        }
+
+        // preview가 저장된 경우: 업로드만 재시도
+        if (error.data?.previewSaved && retryImageName) {
+            uploadImages({
+                isMerge: false,
+                imageName: retryImageName,
+                loadingMessage: '재업로드 중...'
+            });
+            return;
+        }
+
+        // preview가 없는 경우: 기존처럼 전체 재실행
+        uploadImages({
+            isMerge: true,
+            images,
+            frame,
+            loadingMessage: '사진 생성 중...'
+        });
+    });
+};
+
+// 이미지 합성 + 업로드 / 업로드 재시도 공통 처리
+const uploadImages = async ({
+    isMerge,
+    images = [],
+    frame = '',
+    imageName = '',
+    loadingMessage = '사진 생성 중...'
+}) => {
+    // 최초 합성 요청일 때만 frame 검사
+    if (isMerge && frame === '') {
         alert('Frame is not selected.');
         window.location.href = '/';
         return;
     }
 
-    // 이제 브라우저는 access token을 직접 받지 않음
-    // 서버가 저장한 refresh token으로 업로드함
+    // 업로드 중에는 중복 요청 방지
+    if (isUploading) {
+        return;
+    }
+
+    isUploading = true;
+
     try {
-        const response = await fetch('/mergeImages', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ images, frame })
-        });
+        showLoadingOverlay(loadingMessage);
 
-        const data = await response.json();
+        const payload = isMerge
+            ? {
+                images,
+                frame,
+                isMerge: true
+            }
+            : {
+                isMerge: false,
+                imageName
+            };
 
-        if (!response.ok) {
-            throw { status: response.status, data };
-        }
+        const data = await requestMergeImages(payload);
 
         ToastCheck.fire({
             icon: 'success',
             title: data.message
         });
 
-        if (data.imageName && data.googleUrl) {
-            window.location.href = `/qrcode?imageName=${encodeURIComponent(data.imageName)}&googleUrl=${encodeURIComponent(data.googleUrl)}`;
+        if (redirectToQrPage(data)) {
+            return;
         }
+
+        hideLoadingOverlay();
     } catch (error) {
+        hideLoadingOverlay();
+        restoreCaptureUi();
+
         // 아직 1회 인증이 안 된 경우
         if (error.status === 401 && error.data?.authUrl) {
             redirectToGoogleAuth(error.data.authUrl);
             return;
         }
 
-        Swal.fire({
-            icon: 'error',
-            title: '업로드 실패',
-            text: error.data?.message || '이미지 처리 중 오류 발생'
-        });
+        showUploadErrorModal({ error, images, frame });
+    } finally {
+        isUploading = false;
     }
 };
 
+// 사진 생성/업로드 중 오버레이 표시
+const showLoadingOverlay = (message = '사진 생성 중...') => {
+    const { loadingOverlay, cameraUi, frameChoice } = getElements();
+    const text = loadingOverlay?.querySelector('.loading-text');
+
+    if (text) {
+        text.textContent = message;
+    }
+
+    if (cameraUi) {
+        cameraUi.style.display = 'none';
+    }
+
+    if (frameChoice) {
+        frameChoice.style.display = 'none';
+    }
+
+    if (loadingOverlay) {
+        loadingOverlay.style.display = 'flex';
+    }
+};
+
+// 로딩 오버레이 숨김
+const hideLoadingOverlay = () => {
+    const { loadingOverlay } = getElements();
+
+    if (loadingOverlay) {
+        loadingOverlay.style.display = 'none';
+    }
+};
+
+// =========================
+// 이벤트 바인딩
+// =========================
+
+// 프레임 선택 클릭
+document.querySelectorAll('.frame-select').forEach((imgElem) => {
+    imgElem.addEventListener('click', (event) => {
+        const selectedFrame = event.target.getAttribute('data-value');
+        applySelectedFrame(selectedFrame);
+    });
+});
+
+// 프레임 다시 선택
+const { selectFrameButton, captureTrigger } = getElements();
+
+if (selectFrameButton) {
+    selectFrameButton.addEventListener('click', resetFrameSelection);
+}
+
+// 촬영 버튼 클릭
+if (captureTrigger) {
+    captureTrigger.addEventListener('click', captureTimerEvent);
+}
+
+// 키보드 Enter 수동 촬영
+document.addEventListener('keydown', (event) => {
+    if (!isCaptureTimerActive && event.key === 'Enter') {
+        captureButtonEvent();
+    }
+});

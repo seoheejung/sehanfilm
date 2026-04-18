@@ -27,7 +27,6 @@ const ensureTokenDirectory = async () => {
 };
 
 // state 저장용 메모리 저장소
-// 서버 재시작 전까지만 유지
 const oauthStateStore = new Map();
 
 // Google 승인 URL 생성
@@ -110,6 +109,27 @@ const readSavedToken = async () => {
     }
 };
 
+// 토큰 저장
+const saveToken = async (tokenData) => {
+    await ensureTokenDirectory();
+    await fs.promises.writeFile(
+        TOKEN_PATH,
+        JSON.stringify(tokenData, null, 2),
+        'utf-8'
+    );
+};
+
+// 토큰 삭제
+const deleteSavedToken = async () => {
+    try {
+        await fs.promises.unlink(TOKEN_PATH);
+    } catch (err) {
+        if (err.code !== 'ENOENT') {
+            throw err;
+        }
+    }
+};
+
 // refresh token 존재 여부만 체크
 const hasSavedRefreshToken = async () => {
     const token = await readSavedToken();
@@ -133,7 +153,81 @@ const getAuthorizedOAuthClient = async () => {
     const oauth2Client = createOAuthClient();
     oauth2Client.setCredentials(savedToken);
 
+    // access token 재발급 결과를 파일에 반영
+    oauth2Client.on('tokens', async (tokens) => {
+        try {
+            const latestSavedToken = await readSavedToken();
+
+            const mergedToken = {
+                ...latestSavedToken,
+                ...tokens,
+                refresh_token: tokens.refresh_token || latestSavedToken?.refresh_token,
+            };
+
+            await saveToken(mergedToken);
+        } catch (err) {
+            console.error('Failed to persist refreshed Google token:', err);
+        }
+    });
+
     return oauth2Client;
+};
+
+// 저장된 refresh token이 실제 사용 가능한지 검증
+const validateSavedRefreshToken = async () => {
+    const savedToken = await readSavedToken();
+
+    if (!savedToken?.refresh_token) {
+        return {
+            valid: false,
+            reason: 'NO_REFRESH_TOKEN',
+        };
+    }
+
+    try {
+        const oauth2Client = await getAuthorizedOAuthClient();
+
+        // 실제 access token 발급 시도
+        const accessTokenResponse = await oauth2Client.getAccessToken();
+        const accessToken = accessTokenResponse?.token;
+
+        if (!accessToken) {
+            await deleteSavedToken();
+            return {
+                valid: false,
+                reason: 'ACCESS_TOKEN_NOT_ISSUED',
+            };
+        }
+
+        return {
+            valid: true,
+            reason: 'OK',
+        };
+    } catch (err) {
+        const rawMessage = err?.response?.data?.error || err?.message || '';
+        const message = String(rawMessage);
+
+        // refresh token이 죽은 경우 정리
+        if (
+            message.includes('invalid_grant') ||
+            message.includes('unauthorized_client') ||
+            err?.code === 401
+        ) {
+            await deleteSavedToken();
+
+            return {
+                valid: false,
+                reason: 'INVALID_REFRESH_TOKEN',
+            };
+        }
+
+        // 네트워크 장애나 일시 오류는 토큰 폐기 안 함
+        return {
+            valid: false,
+            reason: 'VALIDATION_FAILED_TEMPORARY',
+            error: err,
+        };
+    }
 };
 
 export {
@@ -143,6 +237,9 @@ export {
     validateOAuthState,
     exchangeCodeAndSaveToken,
     readSavedToken,
+    saveToken,
     hasSavedRefreshToken,
     getAuthorizedOAuthClient,
+    validateSavedRefreshToken,
+    deleteSavedToken,
 };

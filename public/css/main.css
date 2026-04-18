@@ -1,9 +1,9 @@
 /* 타이틀 폰트 */
 @font-face {
-    font-family: 'Giants-Inline';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2307-1@1.1/Giants-Inline.woff2') format('woff2');
+    font-family: 'NostalgicMongtori';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-1@1.0/Griun_Mongtori-Rg.woff2') format('woff2');
     font-weight: normal;
-    font-style: normal;
+    font-display: swap;
 }
 
 /* 본문 폰트 */
@@ -25,8 +25,8 @@ body {
 /* body 전체 배경 및 중앙 정렬 */
 body {
     background-color: #000;
-    background-image: url("/image/bg.jpg");
-    background-size: cover;
+    background-image: url("/image/dongbak_shots/bg.png");
+    background-size: contain;
     background-position: center;
     background-attachment: fixed;
     color: #fff;
@@ -54,19 +54,19 @@ body::-webkit-scrollbar {
 
 /* 상단 로고 */
 .logo-text {
-    font-family: 'Giants-Inline';
-    font-size: clamp(42px, 7vw, 72px);
-    color: #62f5da;
+    font-family: 'NostalgicMongtori';
+    font-size: clamp(42px, 6vw, 72px);
+    color: #fdffb8;
     text-decoration: none;
     text-align: center;
-    margin-top: 6px;
-    margin-bottom: 20px;
+    margin-top: 4px;
+    margin-bottom: 10px;
     text-shadow:
         -1px 0 black,
         0 1px black,
         1px 0 black,
         0 -1px black,
-        0 0 10px rgba(0, 0, 0, 0.5);
+        0 0 10px rgba(0, 0, 0, 10);
 }
 
 /* 안내 문구 공통 */
@@ -112,4 +112,148 @@ a.main-text:hover {
     line-height: 1.5;
     color: rgba(255, 255, 255, 0.75);
     text-align: center;
+}
+
+/* 전체 영역 */
+.guide-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+}
+
+/* 카드 */
+.guide-card {
+    border-radius: 16px;
+    padding: 20px;
+    width: 100%;
+    max-width: 420px;
+    color: #fff;
+    text-align: center;
+    backdrop-filter: blur(6px);
+}
+
+/* 제목 */
+.guide-title {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+/* 설명 */
+.guide-desc {
+    font-size: 14px;
+    line-height: 1.5;
+    opacity: 0.9;
+    margin-bottom: 16px;
+}
+
+/* 강조 */
+.highlight {
+    color: #0a845b;
+    font-weight: 700;
+}
+
+/* 단계 */
+.guide-steps {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+/* 개별 step */
+.step {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 10px;
+}
+
+/* 숫자 */
+.step-index {
+    width: 26px;
+    height: 26px;
+    margin: 0 auto 6px;
+    border-radius: 50%;
+    background: #0a845b;
+    color: #000;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 텍스트 */
+.step-text {
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* 카메라 안내 */
+.camera-guide {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    color: #fff;
+    text-align: center;
+    max-width: 420px;
+}
+
+/* 프레임 */
+.frame {
+    margin-top: 12px;
+}
+
+.frame-select {
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.frame-select:hover {
+    transform: scale(1.08);
+}
+
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.72);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loading-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 28px 32px;
+    border-radius: 16px;
+    background: rgba(20, 20, 20, 0.92);
+    min-width: 220px;
+}
+
+.loading-text {
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.loading-spinner {
+    width: 52px;
+    height: 52px;
+    border: 5px solid rgba(255, 255, 255, 0.2);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: loading-spin 0.8s linear infinite;
+}
+
+@keyframes loading-spin {
+    to {
+        transform: rotate(360deg);
+    }
 }

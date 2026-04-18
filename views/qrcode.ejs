@@ -1,27 +1,31 @@
 <%- include('partials/header.ejs'); %>
 <body>
     <div class="parent-container">
-        <a href='/' class="logo-text">sehanFilm</a>
+        <a href='/' class="logo-text">2026 동아리 박람회</a>
 
-        <!-- 방금 합성된 로컬 미리보기 이미지 표시 -->
-        <div class="image-container">
-            <img src="<%= imageUrl %>" class="photo" alt="Merged Image">
+        <!-- 결과 영역 -->
+        <div class="result-container">
+            <!-- 합성 이미지 카드 -->
+            <div class="result-card preview-card">
+                <div class="preview-image-wrap">
+                    <img src="<%= imageUrl %>" class="photo" alt="Merged Image">
+                </div>
+            </div>
+
+            <!-- QR 안내 카드 -->
+            <div class="result-card qr-card">
+                <p class="result-desc">
+                    QR코드를 스캔하면<br>
+                    Google Drive 다운로드 페이지로 이동합니다.
+                </p>
+
+                <!-- QR 코드가 렌더링될 영역 -->
+                <div id="qr-code" class="qr-code"></div>
+
+                <a href="/" class="back-link">돌아가기</a>
+            </div>
         </div>
 
-        <div style="margin: 20px;">
-            <span class="main-text">
-                QR코드를 스캔하면 Google Drive 다운로드 링크로 이동합니다.
-            </span>
-        </div>
-
-        <!-- QR 코드가 렌더링될 영역 -->
-        <div id="qr-code" class="qr-code"></div>
-
-        <div style="margin: 20px;">
-            <a href='/' class="main-text">돌아가기</a>
-        </div>
-
-        <%- include('partials/footer.ejs'); %>
     </div>
 
     <script>

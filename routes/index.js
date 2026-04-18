@@ -5,7 +5,6 @@ import {
     createAuthUrl,
     validateOAuthState,
     exchangeCodeAndSaveToken,
-    hasSavedRefreshToken,
 } from '../services/googleOAuthService.js';
 
 const router = express.Router();
@@ -14,10 +13,8 @@ const router = express.Router();
 router.get('/', async (req, res, next) => {
     try {
         // 메인 화면에서 현재 인증 상태를 보여주기 위해 서버에서 확인
-        const isGoogleDriveAuthorized = await hasSavedRefreshToken();
-
         res.render('webcam', {
-            isGoogleDriveAuthorized,
+            isGoogleDriveAuthorized: req.app.locals.isGoogleDriveAuthorized,
         });
     } catch (err) {
         next(err);
@@ -43,10 +40,14 @@ router.get('/auth/google/callback', async (req, res, next) => {
         validateOAuthState(state);
         await exchangeCodeAndSaveToken(code);
 
+        // 인증 성공했으므로 서버 상태 갱신
+        req.app.locals.isGoogleDriveAuthorized = true;
+
         return res.send(
             '<script type="text/javascript">alert("Google Drive 1회 인증이 완료되었습니다. 이제 촬영 후 자동 업로드가 가능합니다."); window.location="/";</script>'
         );
     } catch (err) {
+        req.app.locals.isGoogleDriveAuthorized = false;
         next(err);
     }
 });
