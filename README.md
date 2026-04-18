@@ -89,6 +89,7 @@ http://localhost:3003
 
 서버
  -> 이미지 합성
+ -> 로컬 preview 저장
  -> Google Drive 업로드
  -> 공유 링크 생성
  -> QR 페이지 반환
@@ -195,8 +196,37 @@ data/google-drive-token.json
 | --- | --- |
 | 인증 없음 | 401 + authUrl 반환 |
 | refresh token 없음 | 인증 유도 |
-| Drive 업로드 실패 | 500 반환 |
-| 이미지 오류 | 400 반환 |
+| 합성 전 요청 오류 | 400 반환 |
+| 합성 완료 후 Drive 업로드 실패 | previewSaved=true + imageName 반환 |
+| 재업로드 대상 preview 없음 | 404 반환 |
+| 예상 못한 서버 오류 | 500 반환 |
+
+### 업로드 실패 재시도 구조
+
+Google Drive 업로드 실패 시 합성 결과 이미지는 먼저 로컬 preview로 저장된다.
+
+- 최초 요청: `isMerge: true`
+  - 촬영 이미지 합성
+  - preview 저장
+  - Drive 업로드 시도
+
+- 재시도 요청: `isMerge: false`
+  - 기존 preview 파일 재사용
+  - 합성 없이 Drive 업로드만 재시도
+
+### 실패 응답 필드
+
+| 필드 | 설명 |
+| --- | --- |
+| previewSaved | 합성 결과 preview 저장 여부 |
+| imageName | 재업로드 대상 preview 파일명 |
+| authUrl | 1회 인증 필요 시 이동 URL |
+
+### 서버 에러 처리 기준
+
+- 컨트롤러는 가능한 한 에러 응답을 직접 종료하지 않고 `next(err)`로 전달
+- 공통 에러 핸들러가 로그 출력과 최종 응답을 담당
+- API 요청은 JSON, 페이지 요청은 alert 후 메인 이동 방식으로 분기
 
 ---
 

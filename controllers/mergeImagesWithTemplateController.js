@@ -2,6 +2,7 @@ import { shots, overlay } from '../config/overlayPositions.js';
 import fs from 'fs';
 import sharp from 'sharp';
 import moment from 'moment';
+import path from 'path';
 import { randomUUID } from 'crypto';
 import { uploadImageBuffer } from '../services/googleDriveService.js';
 
@@ -69,15 +70,58 @@ const savePreviewImage = async (filePath, buffer) => {
 
 // 메인 컨트롤러
 const mergeImagesWithTemplateController = async (req, res, next) => {
-    try {
-        const imagesData = req.body.images;
-        const frameData = req.body.frame;
+    // 업로드 실패 시에도 어떤 파일이 저장됐는지 추적하기 위한 preview 경로
+    let previewPath = null;
 
-        // 이제 accessToken은 브라우저에서 받지 않음
+    // 응답/재시도에 사용할 이미지 이름
+    let imageName = '';
+
+    try {
+        const { images: imagesData, frame: frameData, isMerge = true, imageName: retryImageName } = req.body;
+
+        // 합성 없이 재업로드만 수행하는 경우
+        if (isMerge === false) {
+            if (!retryImageName) {
+                const error = new Error('재업로드할 이미지 이름이 없습니다.');
+                error.status = 400;
+                error.previewSaved = false;
+                error.imageName = null;
+                throw error;
+            }
+
+            previewPath = path.join('./public/2026_finalOutput', retryImageName);
+            imageName = retryImageName;
+
+            // 저장된 preview 파일 존재 여부 확인
+            await fs.promises.access(previewPath);
+
+            // 저장된 preview 파일을 읽어서 업로드만 다시 시도
+            const previewBuffer = await fs.promises.readFile(previewPath);
+
+            const driveFile = await uploadImageBuffer({
+                buffer: previewBuffer,
+                fileName: imageName,
+                mimeType: 'image/png',
+                app: req.app,
+            });
+
+            console.log(`[ ${moment().format('YYYY-MM-DD HH:mm:ss')} ] ${imageName} retry upload complete`);
+
+            return res.json({
+                message: 'Google Drive 재업로드가 완료되었습니다.',
+                imageName,
+                fileId: driveFile.fileId,
+                googleUrl: driveFile.downloadUrl
+            });
+        }
+
+        // 요청 유효성 검사
         ensureValidRequest(imagesData, frameData);
 
-        const imageName = `sehanDongbak_${moment().format('YYMMDD_HHmmss')}_${randomUUID()}.png`;
+        // 결과 이미지 이름 생성
+        imageName = `sehanDongbak_${moment().format('YYMMDD_HHmmss')}_${randomUUID()}.png`;
 
+        // 프레임 원본 이미지 경로 선택
         const templatePath =
             frameData === 'dongbak_shots'
                 ? `./public/image/${frameData}/frame_small.png`
@@ -86,12 +130,14 @@ const mergeImagesWithTemplateController = async (req, res, next) => {
         const template = sharp(templatePath);
         const shotPositions = shots[frameData];
 
+        // 프레임 좌표 설정 검증
         if (!Array.isArray(shotPositions) || shotPositions.length !== FRAME_IMAGE_COUNT[frameData]) {
             const error = new Error('프레임 좌표 설정이 올바르지 않습니다.');
             error.status = 500;
             throw error;
         }
 
+        // 촬영 이미지를 프레임 좌표에 맞게 합성용 데이터로 변환
         const imageOverlays = await Promise.all(
             imagesData.map(async (data, index) => {
                 const resizedBuffer = frameData === 'dongbak_shots'
@@ -114,6 +160,7 @@ const mergeImagesWithTemplateController = async (req, res, next) => {
 
         let finalImageBuffer = mergedImageBuffer;
 
+        // overlay가 필요한 프레임만 2차 합성
         if (!FRAMES_WITHOUT_OVERLAY.has(frameData)) {
             const overlayImage =
                 frameData === 'dongbak_shots'
@@ -121,6 +168,8 @@ const mergeImagesWithTemplateController = async (req, res, next) => {
                     : `./public/image/${frameData}/overlay.png`;
 
             const layerPosition = overlay[frameData];
+
+            // overlay 좌표 설정 검증
             if (!layerPosition || typeof layerPosition.left !== 'number' || typeof layerPosition.top !== 'number') {
                 const error = new Error('오버레이 좌표 설정이 올바르지 않습니다.');
                 error.status = 500;
@@ -139,7 +188,7 @@ const mergeImagesWithTemplateController = async (req, res, next) => {
         }
 
         // QR 페이지용 로컬 미리보기 저장
-        const previewPath = `./public/2026_finalOutput/${imageName}`;
+        previewPath = `./public/2026_finalOutput/${imageName}`;
         await savePreviewImage(previewPath, finalImageBuffer);
 
         // 서버가 저장한 refresh token으로 자동 업로드
@@ -159,18 +208,32 @@ const mergeImagesWithTemplateController = async (req, res, next) => {
             googleUrl: driveFile.downloadUrl
         });
     } catch (err) {
-        // 아직 1회 인증 안 된 상태
+        // 글로벌 핸들러에서 응답할 수 있게 메타데이터만 보강
         if (err.code === 'DRIVE_AUTH_REQUIRED') {
-            return res.status(401).json({
-                message: 'Google Drive 1회 인증이 필요합니다.',
-                authUrl: err.authUrl
-            });
+            err.status = 401;
+            err.message = 'Google Drive 1회 인증이 필요합니다.';
+            err.authUrl = err.authUrl;
         }
 
-        if (err.status) {
-            return res.status(err.status).json({
-                message: err.message
-            });
+        if (err.code === 'ENOENT') {
+            err.status = 404;
+            err.message = '재업로드할 로컬 이미지가 없습니다.';
+            err.previewSaved = false;
+            err.imageName = null;
+        }
+
+        if (!err.status) {
+            err.status = 500;
+            err.message = err.message || '이미지 합성 또는 업로드 중 서버 오류가 발생했습니다.';
+        }
+
+        // 프론트 재시도 판단에 필요한 값 부착
+        if (typeof err.previewSaved === 'undefined') {
+            err.previewSaved = Boolean(previewPath);
+        }
+
+        if (typeof err.imageName === 'undefined') {
+            err.imageName = previewPath ? imageName : null;
         }
 
         return next(err);
